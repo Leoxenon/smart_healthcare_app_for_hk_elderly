@@ -1,5 +1,6 @@
 import { Volume2 } from 'lucide-react';
 import { useState } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface VoiceButtonProps {
   text: string;
@@ -9,15 +10,26 @@ interface VoiceButtonProps {
 
 export function VoiceButton({ text, size = 'small', className = '' }: VoiceButtonProps) {
   const [isPlaying, setIsPlaying] = useState(false);
+  const { settings } = useSettings();
 
   const handlePlay = () => {
     setIsPlaying(true);
     
-    // Mock voice playback - in production, would use Web Speech API
+    // Use Web Speech API with settings
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-HK';
-    utterance.rate = 0.8;
-    utterance.volume = 0.8;
+    
+    // Apply language settings
+    if (settings.language === 'cantonese') {
+      utterance.lang = 'zh-HK';
+    } else if (settings.language === 'mandarin') {
+      utterance.lang = 'zh-CN';
+    } else {
+      utterance.lang = 'zh-HK'; // Default to Cantonese
+    }
+    
+    // Apply voice settings
+    utterance.rate = settings.voiceSpeed;
+    utterance.volume = settings.voiceVolume;
     
     utterance.onend = () => {
       setIsPlaying(false);
