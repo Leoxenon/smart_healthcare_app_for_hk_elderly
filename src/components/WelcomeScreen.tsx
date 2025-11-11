@@ -1,13 +1,14 @@
-import { Heart, Fingerprint, Scan } from 'lucide-react';
+import { Heart, Fingerprint, Scan, UserPlus } from 'lucide-react';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 
 interface WelcomeScreenProps {
   onLogin: () => void;
+  onRegister: () => void;
   onEmergency: () => void;
 }
 
-export function WelcomeScreen({ onLogin, onEmergency }: WelcomeScreenProps) {
+export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScreenProps) {
   const handleFingerprintLogin = () => {
     // Mock fingerprint login
     onLogin();
@@ -54,6 +55,26 @@ export function WelcomeScreen({ onLogin, onEmergency }: WelcomeScreenProps) {
             <Scan className="w-20 h-20" />
             <span>人臉識別</span>
           </button>
+
+          {/* 分隔線 */}
+          <div className="flex items-center gap-4 my-8">
+            <div className="flex-1 h-0.5 bg-gray-300"></div>
+            <span className="text-gray-500">或</span>
+            <div className="flex-1 h-0.5 bg-gray-300"></div>
+          </div>
+
+          {/* 新用戶注冊 */}
+          <button
+            onClick={onRegister}
+            className="w-full bg-purple-500 hover:bg-purple-600 text-white rounded-3xl px-8 py-12 transition-all hover:scale-105 shadow-lg flex flex-col items-center justify-center gap-6"
+          >
+            <UserPlus className="w-20 h-20" />
+            <span>新用戶注冊</span>
+          </button>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            首次使用？請先注冊以建立您的健康檔案，讓AI為您提供個性化的健康建議。
+          </p>
         </div>
       </div>
 

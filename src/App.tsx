@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { RegisterScreen } from './components/RegisterScreen';
 import { Dashboard } from './components/Dashboard';
 import { MedicationScreen } from './components/MedicationScreen';
 import { HealthDataScreen } from './components/HealthDataScreen';
@@ -21,6 +22,7 @@ export default function App() {
   const [showEmergency, setShowEmergency] = useState(false);
   const [showVoiceListening, setShowVoiceListening] = useState(false);
   const [showRescueVisualization, setShowRescueVisualization] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [settings, setSettings] = useState({
     fontSize: 'large',
     theme: 'light',
@@ -33,6 +35,19 @@ export default function App() {
   const handleLogin = () => {
     setIsLoggedIn(true);
     setCurrentScreen('dashboard');
+  };
+
+  const handleRegister = () => {
+    setCurrentScreen('register');
+  };
+
+  const handleRegistrationComplete = (profile: any) => {
+    setUserProfile(profile);
+    setIsLoggedIn(true);
+    setCurrentScreen('dashboard');
+    
+    // 可以在這裡保存用戶檔案到本地存儲或發送到服務器
+    localStorage.setItem('userProfile', JSON.stringify(profile));
   };
 
   const navigateTo = (screen: string) => {
@@ -71,7 +86,10 @@ export default function App() {
 
   const renderScreen = () => {
     if (!isLoggedIn) {
-      return <WelcomeScreen onLogin={handleLogin} onEmergency={handleEmergency} />;
+      if (currentScreen === 'register') {
+        return <RegisterScreen onNavigate={navigateTo} onRegister={handleRegistrationComplete} />;
+      }
+      return <WelcomeScreen onLogin={handleLogin} onRegister={handleRegister} onEmergency={handleEmergency} />;
     }
 
     switch (currentScreen) {
