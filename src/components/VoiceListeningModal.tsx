@@ -1,5 +1,6 @@
 import { Mic, X, Check, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface VoiceListeningModalProps {
   onClose: () => void;
@@ -7,40 +8,56 @@ interface VoiceListeningModalProps {
 }
 
 export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalProps) {
+  const { settings } = useSettings();
   const [isListening, setIsListening] = useState(true);
   const [recognizedText, setRecognizedText] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  // Mock voice commands in Cantonese
-  const mockCommands = [
-    '開啟用藥提醒',
-    '記錄血壓',
-    '查看健康知識',
-    '打電話畀醫生',
-    '緊急求助',
-    '查看菜譜',
-    '睇下風險預測',
-  ];
-
   useEffect(() => {
-    if (isListening) {
-      // Play listening sound
-      const utterance = new SpeechSynthesisUtterance('正在聆聽您嘅指令，請講嘢');
-      utterance.lang = 'zh-HK';
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
+    if (!isListening) return;
 
-      // Mock voice recognition after 2 seconds
-      const timer = setTimeout(() => {
-        const randomCommand = mockCommands[Math.floor(Math.random() * mockCommands.length)];
-        setRecognizedText(randomCommand);
+    const recogLang = settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK';
+    const promptText = recogLang === 'en-US' ? 'Listening, please speak' : recogLang === 'zh-CN' ? '正在聆听您的指令，请讲话' : '正在聆聽您嘅指令，請講嘢';
+
+    const utterance = new SpeechSynthesisUtterance(promptText);
+    utterance.lang = recogLang;
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = recogLang;
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript as string;
+        setRecognizedText(transcript);
         setShowConfirmation(true);
         setIsListening(false);
-      }, 2000);
+      };
 
-      return () => clearTimeout(timer);
+      recognition.onerror = () => {
+        setIsListening(false);
+        setShowConfirmation(true);
+        setRecognizedText('');
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+      return () => {
+        recognition.stop?.();
+      };
+    } else {
+      setIsListening(false);
+      setShowConfirmation(true);
+      setRecognizedText('');
     }
-  }, [isListening]);
+  }, [isListening, settings.language]);
 
   const handleConfirm = () => {
     onCommand(recognizedText);

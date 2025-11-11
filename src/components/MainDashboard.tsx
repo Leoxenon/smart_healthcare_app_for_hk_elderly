@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
+import { useSettings } from '../contexts/SettingsContext';
 import { Mic, MessageCircle, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 
 interface MainDashboardProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function MainDashboard({ onNavigate, onEmergency }: MainDashboardProps) {
+export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDashboardProps) {
+  const { settings } = useSettings();
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
-  const [currentMessage, setCurrentMessage] = useState<string>('');
-  const [showBubbles, setShowBubbles] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState<string>('點擊我可以問候，點擊想法氣泡去不同功能！');
+  const [showBubbles, setShowBubbles] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const [hasGreeted, setHasGreeted] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(true);
   const [isSpeaking, setIsSpeaking] = useState(false); // 新增：语音播放状态
 
   const now = new Date();
@@ -143,57 +146,12 @@ export function MainDashboard({ onNavigate, onEmergency }: MainDashboardProps) {
     }
   }, [hasGreeted, now]);
 
-  // 语音输入处理
   const handleVoiceInput = () => {
-    // 如果正在播放语音，忽略操作
-    if (isSpeaking) {
-      return;
-    }
-
-    setIsVoiceMode(true);
-    setAiEmotion('thinking');
-    setCurrentMessage('我在聽緊您講嘢...');
-    setIsSpeaking(true);
-
-    // 模拟语音识别过程
-    setTimeout(() => {
-      // 模拟粤语语音识别结果
-      const voiceCommands = [
-        { command: '食藥', response: '好呀！我幫您睇下今日仲有咩藥要食。', action: 'medication' },
-        { command: '血壓', response: '我幫您記錄血壓數據，請去健康數據頁面。', action: 'health-data' },
-        { command: '菜譜', response: '今日我推薦清蒸石斑魚，營養豐富又好味！', action: 'recipe' },
-        { command: '醫生', response: '我幫您聯絡您嘅家庭醫生。', action: 'contacts' },
-        { command: '知識', response: '有好多健康貼士等緊您去睇呀！', action: 'knowledge' }
-      ];
-      
-      const randomCommand = voiceCommands[Math.floor(Math.random() * voiceCommands.length)];
-      
-      setAiEmotion('talking');
-      setCurrentMessage(randomCommand.response);
-      
-      // 播放粤语语音回复
-      const utterance = new SpeechSynthesisUtterance(randomCommand.response);
-      utterance.lang = 'zh-HK';
-      utterance.rate = 0.8;
-      utterance.volume = 0.8;
-      
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        setIsVoiceMode(false);
-        
-        // 3秒后执行导航或清除消息
-        setTimeout(() => {
-          if (randomCommand.action && Math.random() > 0.5) {
-            onNavigate(randomCommand.action);
-          } else {
-            setCurrentMessage('');
-            setAiEmotion('happy');
-          }
-        }, 2000);
-      };
-      
-      window.speechSynthesis.speak(utterance);
-    }, 3000);
+    try {
+      window.speechSynthesis.cancel();
+    } catch {}
+    setIsSpeaking(false);
+    if (typeof onVoiceInput === 'function') onVoiceInput();
   };
 
   // 点击AI角色交互

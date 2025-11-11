@@ -59,24 +59,36 @@ export default function App() {
   };
 
   const handleVoiceCommand = (command: string) => {
-    // Process voice command and navigate
-    if (command.includes('用藥') || command.includes('藥物')) {
+    const t = command.toLowerCase();
+    if (t.includes('用藥') || t.includes('藥物') || t.includes('用药') || t.includes('药物') || t.includes('吃药') || t.includes('medicine') || t.includes('medication') || t.includes('pill') || t.includes('drug')) {
       navigateTo('medication');
-    } else if (command.includes('血壓') || command.includes('數據')) {
-      navigateTo('health-data');
-    } else if (command.includes('知識')) {
-      navigateTo('knowledge');
-    } else if (command.includes('醫生') || command.includes('電話')) {
-      navigateTo('contacts');
-    } else if (command.includes('緊急') || command.includes('求助')) {
-      handleEmergency();
-    } else if (command.includes('菜譜') || command.includes('食譜')) {
-      navigateTo('recipe');
-    } else if (command.includes('風險') || command.includes('預測')) {
-      navigateTo('risk-prediction');
-    } else {
-      navigateTo('dashboard');
+      return;
     }
+    if (t.includes('血壓') || t.includes('數據') || t.includes('血压') || t.includes('健康数据') || t.includes('数据') || t.includes('血糖') || t.includes('blood pressure') || t.includes('health data') || t.includes('glucose') || t.includes('sugar')) {
+      navigateTo('health-data');
+      return;
+    }
+    if (t.includes('知識') || t.includes('知識庫') || t.includes('知识') || t.includes('知识库') || t.includes('tips') || t.includes('knowledge') || t.includes('info') || t.includes('information')) {
+      navigateTo('knowledge');
+      return;
+    }
+    if (t.includes('醫生') || t.includes('聯絡') || t.includes('電話') || t.includes('医生') || t.includes('联系') || t.includes('电话') || t.includes('doctor') || t.includes('contact') || t.includes('call') || t.includes('phone')) {
+      navigateTo('contacts');
+      return;
+    }
+    if (t.includes('緊急') || t.includes('求助') || t.includes('救命') || t.includes('紧急') || t.includes('帮助') || t.includes('急救') || t.includes('emergency') || t.includes('help')) {
+      handleEmergency();
+      return;
+    }
+    if (t.includes('菜譜') || t.includes('食譜') || t.includes('菜谱') || t.includes('食谱') || t.includes('recipe') || t.includes('food') || t.includes('cook') || t.includes('meal')) {
+      navigateTo('recipe');
+      return;
+    }
+    if (t.includes('風險') || t.includes('預測') || t.includes('評估') || t.includes('风险') || t.includes('预测') || t.includes('评估') || t.includes('risk') || t.includes('prediction') || t.includes('assess')) {
+      navigateTo('risk-prediction');
+      return;
+    }
+    navigateTo('dashboard');
   };
 
   const handleEmergencyConfirm = () => {
@@ -94,7 +106,7 @@ export default function App() {
 
     switch (currentScreen) {
       case 'dashboard':
-        return <MainDashboard onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <MainDashboard onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'medication':
         return <MedicationScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
       case 'health-data':
@@ -102,7 +114,7 @@ export default function App() {
       case 'knowledge':
         return <KnowledgeScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
       case 'assistant':
-        return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'activity':
         return <ActivityScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
       case 'contacts':

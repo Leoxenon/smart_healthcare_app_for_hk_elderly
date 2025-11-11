@@ -13,28 +13,30 @@ export function VoiceButton({ text, size = 'small', className = '' }: VoiceButto
   const { settings } = useSettings();
 
   const handlePlay = () => {
-    setIsPlaying(true);
-    
-    // Use Web Speech API with settings
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+      return;
+    }
+
     const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Apply language settings
     if (settings.language === 'cantonese') {
       utterance.lang = 'zh-HK';
     } else if (settings.language === 'mandarin') {
       utterance.lang = 'zh-CN';
+    } else if (settings.language === 'english') {
+      utterance.lang = 'en-US';
     } else {
-      utterance.lang = 'zh-HK'; // Default to Cantonese
+      utterance.lang = 'zh-HK';
     }
-    
-    // Apply voice settings
     utterance.rate = settings.voiceSpeed;
     utterance.volume = settings.voiceVolume;
-    
+    utterance.onstart = () => {
+      setIsPlaying(true);
+    };
     utterance.onend = () => {
       setIsPlaying(false);
     };
-    
     window.speechSynthesis.speak(utterance);
   };
 
@@ -42,11 +44,11 @@ export function VoiceButton({ text, size = 'small', className = '' }: VoiceButto
     return (
       <button
         onClick={handlePlay}
-        className={`flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all ${isPlaying ? 'ring-4 ring-blue-300' : ''} ${className}`}
-        aria-label="播放語音說明"
+        className={`flex items-center justify-center gap-3 text-white rounded-2xl px-8 py-6 transition-all ${isPlaying ? 'bg-red-500 hover:bg-red-600 ring-4 ring-red-300' : 'bg-blue-500 hover:bg-blue-600'} ${className}`}
+        aria-label={isPlaying ? '停止播放' : '播放語音說明'}
       >
         <Volume2 className="w-10 h-10" />
-        <span>播放語音說明</span>
+        <span>{isPlaying ? '停止播放' : '播放語音說明'}</span>
       </button>
     );
   }
@@ -54,8 +56,8 @@ export function VoiceButton({ text, size = 'small', className = '' }: VoiceButto
   return (
     <button
       onClick={handlePlay}
-      className={`flex items-center justify-center bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full p-3 transition-all ${isPlaying ? 'ring-2 ring-blue-400' : ''} ${className}`}
-      aria-label="播放語音"
+      className={`flex items-center justify-center rounded-full p-3 transition-all ${isPlaying ? 'bg-red-100 hover:bg-red-200 text-red-700 ring-2 ring-red-400' : 'bg-blue-100 hover:bg-blue-200 text-blue-700'} ${className}`}
+      aria-label={isPlaying ? '停止播放' : '播放語音'}
     >
       <Volume2 className="w-6 h-6" />
     </button>

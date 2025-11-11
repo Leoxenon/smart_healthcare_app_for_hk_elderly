@@ -34,6 +34,7 @@ export function SettingsScreen({ onNavigate, onEmergency, settings, onUpdateSett
   const languages = [
     { id: 'cantonese', label: '粵語', value: 'cantonese' },
     { id: 'mandarin', label: '普通話', value: 'mandarin' },
+    { id: 'english', label: '英文', value: 'english' },
   ];
 
   return (

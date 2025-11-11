@@ -1,4 +1,5 @@
 import { ArrowLeft, Mic, MessageCircle, Heart, Sparkles } from 'lucide-react';
+import { useSettings } from '../contexts/SettingsContext';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { AICharacter } from './AICharacter';
@@ -7,6 +8,7 @@ import { useState, useEffect } from 'react';
 interface AssistantScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
 interface Message {
@@ -16,7 +18,8 @@ interface Message {
   timestamp: Date;
 }
 
-export function AssistantScreen({ onNavigate, onEmergency }: AssistantScreenProps) {
+export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: AssistantScreenProps) {
+  const { settings } = useSettings();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -120,16 +123,9 @@ export function AssistantScreen({ onNavigate, onEmergency }: AssistantScreenProp
   };
 
   const handleVoiceInput = () => {
-    setIsVoiceMode(true);
-    setAiEmotion('thinking');
-    setCurrentMessage('我在聆聽...');
-    
-    // Mock voice input - simulate the user saying "我需要用藥提醒"
-    setTimeout(() => {
-      handleQuickReply('我需要用藥提醒', 'caring');
-      setIsVoiceMode(false);
-      setCurrentMessage('');
-    }, 3000);
+    if (typeof onVoiceInput === 'function') {
+      onVoiceInput();
+    }
   };
 
   return (

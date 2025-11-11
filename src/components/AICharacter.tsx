@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { KeyboardEvent } from 'react';
 import { Heart, Sparkles } from 'lucide-react';
 
 interface AICharacterProps {
@@ -6,13 +7,21 @@ interface AICharacterProps {
   isAnimating?: boolean;
   size?: 'small' | 'medium' | 'large';
   message?: string;
+  className?: string;
+  ariaLabel?: string;
+  autoEmotionOnMessage?: boolean;
+  onClick?: () => void;
 }
 
 export function AICharacter({ 
   emotion = 'happy', 
   isAnimating = false, 
   size = 'medium',
-  message 
+  message,
+  className,
+  ariaLabel,
+  autoEmotionOnMessage = true,
+  onClick
 }: AICharacterProps) {
   const [currentEmotion, setCurrentEmotion] = useState(emotion);
   const [eyeBlink, setEyeBlink] = useState(false);
@@ -43,8 +52,12 @@ export function AICharacter({
 
   // 更新表情
   useEffect(() => {
-    setCurrentEmotion(emotion);
-  }, [emotion]);
+    if (autoEmotionOnMessage && message && emotion !== 'sleeping') {
+      setCurrentEmotion('talking');
+    } else {
+      setCurrentEmotion(emotion);
+    }
+  }, [emotion, message, autoEmotionOnMessage]);
 
   const sizeClasses = {
     small: 'w-20 h-20',
@@ -114,10 +127,37 @@ export function AICharacter({
     }
   };
 
+  const emotionLabelMap: Record<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping', string> = {
+    happy: '開心的AI角色',
+    talking: '正在說話的AI角色',
+    thinking: '思考中的AI角色',
+    caring: '關懷的AI角色',
+    sleeping: '睡覺的AI角色'
+  };
+
+  const computedAriaLabel = ariaLabel ?? (message ? `${emotionLabelMap[currentEmotion]}，消息：${message}` : emotionLabelMap[currentEmotion]);
+
+  const showAura = (isAnimating || currentEmotion === 'talking') && currentEmotion !== 'sleeping';
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!onClick) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
-    <div className={`relative ${sizeClasses[size]} mx-auto`}>
+    <div
+      className={`relative ${sizeClasses[size]} mx-auto ${className ?? ''}`}
+      role={onClick ? 'button' : 'img'}
+      aria-label={computedAriaLabel}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+    >
       {/* 光環效果 */}
-      {isAnimating && (
+      {showAura && (
         <div className="absolute inset-0 animate-ping">
           <div 
             className="w-full h-full rounded-full opacity-20"
@@ -129,7 +169,7 @@ export function AICharacter({
       {/* 主要角色 */}
       <div 
         className={`relative w-full h-full rounded-full shadow-lg transition-all duration-300 ${
-          isAnimating ? 'scale-110' : 'scale-100'
+          showAura ? 'scale-110' : 'scale-100'
         }`}
         style={{ backgroundColor: getCharacterColor() }}
       >
