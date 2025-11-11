@@ -1,6 +1,6 @@
 
   {
-      "name": "智能健康管理应用",
+      "name": "smart-healthcare-app",
       "version": "0.1.0",
       "private": true,
       "dependencies": {
@@ -54,6 +54,10 @@
       },
       "scripts": {
           "dev": "vite",
-          "build": "vite build"
-      }
+          "build": "vite build",
+          "preview": "vite preview",
+          "predeploy": "npm run build",
+          "deploy": "gh-pages -d dist"
+      },
+      "homepage": "https://leoxenon.github.io/Smart_Healthcare_App_for_HK_Elderly"
   }
