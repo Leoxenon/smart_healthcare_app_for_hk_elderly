@@ -1,0 +1,343 @@
+import { useState, useEffect } from 'react';
+import { Mic, MessageCircle, Settings } from 'lucide-react';
+import { AICharacter } from './AICharacter';
+
+interface MainDashboardProps {
+  onNavigate: (screen: string) => void;
+  onEmergency: () => void;
+}
+
+export function MainDashboard({ onNavigate, onEmergency }: MainDashboardProps) {
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('');
+  const [showBubbles, setShowBubbles] = useState(false);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false); // 新增：语音播放状态
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('zh-HK', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    weekday: 'long'
+  });
+  const timeStr = now.toLocaleTimeString('zh-HK', { 
+    hour: '2-digit', 
+    minute: '2-digit'
+  });
+
+  // 想法气泡导航选项
+  const thoughtBubbles = [
+    {
+      id: 'medication',
+      text: '今日用藥',
+      icon: '💊',
+      color: 'bg-green-100 border-green-300 text-green-800',
+      onClick: () => {
+        onNavigate('medication');
+        setShowBubbles(false);
+      }
+    },
+    {
+      id: 'health-data',
+      text: '健康數據',
+      icon: '📊',
+      color: 'bg-blue-100 border-blue-300 text-blue-800',
+      onClick: () => {
+        onNavigate('health-data');
+        setShowBubbles(false);
+      }
+    },
+    {
+      id: 'risk-prediction',
+      text: 'AI風險預測',
+      icon: '⚠️',
+      color: 'bg-red-100 border-red-300 text-red-800',
+      onClick: () => {
+        onNavigate('risk-prediction');
+        setShowBubbles(false);
+      }
+    },
+    {
+      id: 'knowledge',
+      text: '健康知識',
+      icon: '📚',
+      color: 'bg-yellow-100 border-yellow-300 text-yellow-800',
+      onClick: () => {
+        onNavigate('knowledge');
+        setShowBubbles(false);
+      }
+    },
+    {
+      id: 'recipe',
+      text: 'AI菜譜',
+      icon: '👨‍🍳',
+      color: 'bg-orange-100 border-orange-300 text-orange-800',
+      onClick: () => {
+        onNavigate('recipe');
+        setShowBubbles(false);
+      }
+    },
+    {
+      id: 'contacts',
+      text: '聯絡醫生',
+      icon: '📞',
+      color: 'bg-purple-100 border-purple-300 text-purple-800',
+      onClick: () => {
+        onNavigate('contacts');
+        setShowBubbles(false);
+      }
+    }
+  ];
+
+  // 粤语问候语
+  const cantoneseGreetings = [
+    '早晨！今日天氣好靚呀！',
+    '您好！身體點樣呀？',
+    '午安！記得食飯呀！',
+    '您好！今日感覺好啲未？',
+    '晚安！早啲瞓覺呀！'
+  ];
+
+  // 初始问候
+  useEffect(() => {
+    if (!hasGreeted) {
+      const hour = now.getHours();
+      let greeting = '';
+      
+      if (hour < 12) {
+        greeting = '早晨！今日天氣好靚呀！記得食早餐同埋飲水呀！';
+      } else if (hour < 18) {
+        greeting = '午安！今日過得點樣？記得按時食藥呀！';
+      } else {
+        greeting = '晚安！今晚食咗飯未？記得早啲休息呀！';
+      }
+
+      setTimeout(() => {
+        setAiEmotion('talking');
+        setCurrentMessage(greeting);
+        setHasGreeted(true);
+        setIsSpeaking(true);
+        
+        // 播放粤语问候
+        const utterance = new SpeechSynthesisUtterance(greeting);
+        utterance.lang = 'zh-HK';
+        utterance.rate = 0.8;
+        utterance.volume = 0.8;
+        
+        utterance.onend = () => {
+          setIsSpeaking(false);
+          setCurrentMessage('點擊我可以問候，點擊想法氣泡去不同功能！');
+          setAiEmotion('happy');
+          setShowBubbles(true); // 直接显示想法气泡
+          
+          // 5秒后清除提示信息
+          setTimeout(() => {
+            setCurrentMessage('');
+          }, 5000);
+        };
+        
+        window.speechSynthesis.speak(utterance);
+      }, 1000);
+    }
+  }, [hasGreeted, now]);
+
+  // 语音输入处理
+  const handleVoiceInput = () => {
+    // 如果正在播放语音，忽略操作
+    if (isSpeaking) {
+      return;
+    }
+
+    setIsVoiceMode(true);
+    setAiEmotion('thinking');
+    setCurrentMessage('我在聽緊您講嘢...');
+    setIsSpeaking(true);
+
+    // 模拟语音识别过程
+    setTimeout(() => {
+      // 模拟粤语语音识别结果
+      const voiceCommands = [
+        { command: '食藥', response: '好呀！我幫您睇下今日仲有咩藥要食。', action: 'medication' },
+        { command: '血壓', response: '我幫您記錄血壓數據，請去健康數據頁面。', action: 'health-data' },
+        { command: '菜譜', response: '今日我推薦清蒸石斑魚，營養豐富又好味！', action: 'recipe' },
+        { command: '醫生', response: '我幫您聯絡您嘅家庭醫生。', action: 'contacts' },
+        { command: '知識', response: '有好多健康貼士等緊您去睇呀！', action: 'knowledge' }
+      ];
+      
+      const randomCommand = voiceCommands[Math.floor(Math.random() * voiceCommands.length)];
+      
+      setAiEmotion('talking');
+      setCurrentMessage(randomCommand.response);
+      
+      // 播放粤语语音回复
+      const utterance = new SpeechSynthesisUtterance(randomCommand.response);
+      utterance.lang = 'zh-HK';
+      utterance.rate = 0.8;
+      utterance.volume = 0.8;
+      
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setIsVoiceMode(false);
+        
+        // 3秒后执行导航或清除消息
+        setTimeout(() => {
+          if (randomCommand.action && Math.random() > 0.5) {
+            onNavigate(randomCommand.action);
+          } else {
+            setCurrentMessage('');
+            setAiEmotion('happy');
+          }
+        }, 2000);
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    }, 3000);
+  };
+
+  // 点击AI角色交互
+  const handleAIClick = () => {
+    // 如果正在播放语音，忽略点击
+    if (isSpeaking) {
+      return;
+    }
+
+    const simpleGreetings = [
+      '您好呀！有咩可以幫到您？',
+      '今日身體感覺點樣？',
+      '記得按時食藥呀！',
+      '要唔要我提醒您做運動？',
+      '今日飲夠水未呀？',
+      '有咩想問小健嘅？',
+      '身體健康最重要呀！',
+      '記得定期檢查身體呀！'
+    ];
+    
+    const randomMessage = simpleGreetings[Math.floor(Math.random() * simpleGreetings.length)];
+    setAiEmotion('caring');
+    setCurrentMessage(randomMessage);
+    setIsSpeaking(true);
+    
+    // 播放粤语语音问候
+    const utterance = new SpeechSynthesisUtterance(randomMessage);
+    utterance.lang = 'zh-HK';
+    utterance.rate = 0.8;
+    utterance.volume = 0.8;
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('');
+      setAiEmotion('happy');
+    };
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* 顶部欢迎区域 */}
+      <div className="bg-white shadow-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-green-700 mb-2">您好！</h1>
+            <h2 className="text-green-700 mb-2">歡迎回來</h2>
+            <p className="text-gray-600">{dateStr}</p>
+            <p className="text-gray-600">{timeStr}</p>
+          </div>
+          {/* 设置按钮 - 放在右上方 */}
+          <button
+            onClick={() => onNavigate('settings')}
+            className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+            aria-label="設置"
+          >
+            <Settings className="w-6 h-6 text-gray-600" />
+            <span className="text-sm text-gray-600">設置</span>
+          </button>
+        </div>
+      </div>
+
+      {/* AI助手主区域 */}
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
+          {/* AI角色展示区 */}
+          <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border-4 border-gradient-to-r from-blue-200 to-purple-200 relative">
+            <div className="flex flex-col items-center text-center relative">
+              {/* 紧急求助按钮 - 移到AI角色正上方 */}
+              <div className="mb-4">
+                <button
+                  onClick={onEmergency}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+                  aria-label="緊急求助"
+                >
+                  <span className="text-lg">🆘</span>
+                  <span className="font-bold">緊急求助</span>
+                </button>
+              </div>
+
+              {/* AI角色 */}
+              <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+                <AICharacter 
+                  emotion={aiEmotion}
+                  isAnimating={isVoiceMode}
+                  size="large"
+                  message={currentMessage}
+                />
+              </div>
+
+              {/* AI介绍 - 简化版 */}
+              <div className="max-w-2xl mb-6">
+                <h2 className="text-3xl font-bold text-gray-800 mb-4 flex items-center gap-3 justify-center">
+                  <MessageCircle className="w-8 h-8 text-purple-500" />
+                  小健 - 您嘅健康助手
+                </h2>
+              </div>
+
+              {/* 想法气泡 - 移到AI下方 */}
+              {showBubbles && (
+                <div className="mb-8 w-full max-w-4xl">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
+                    {thoughtBubbles.map((bubble, index) => (
+                      <button
+                        key={bubble.id}
+                        onClick={bubble.onClick}
+                        className={`${bubble.color} px-6 py-4 rounded-2xl shadow-lg border-2 hover:scale-110 transition-all duration-300 animate-bounce flex flex-col items-center gap-2 min-w-[120px]`}
+                        style={{ 
+                          animationDelay: `${index * 150}ms`,
+                          animationDuration: '2s'
+                        }}
+                      >
+                        <span className="text-2xl">{bubble.icon}</span>
+                        <span className="text-sm font-medium text-center leading-tight">{bubble.text}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 语音输入按钮 - 改为圆形紫色按钮 */}
+              <button
+                onClick={handleVoiceInput}
+                className={`bg-purple-500 hover:bg-purple-600 text-white rounded-full p-6 shadow-2xl transition-all hover:scale-110 flex items-center justify-center ${
+                  isVoiceMode ? 'ring-4 ring-purple-300 animate-pulse' : ''
+                }`}
+                aria-label="語音輸入"
+              >
+                <Mic className="w-10 h-10" />
+              </button>
+
+              {/* 提示信息 */}
+              {!hasGreeted && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-blue-800 text-sm">
+                    💡 正在載入小健...
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

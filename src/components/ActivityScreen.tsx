@@ -31,7 +31,7 @@ export function ActivityScreen({ onNavigate, onEmergency }: ActivityScreenProps)
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
       <div className="bg-white shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
