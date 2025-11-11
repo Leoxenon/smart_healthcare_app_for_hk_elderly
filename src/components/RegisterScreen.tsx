@@ -140,7 +140,7 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
     <button
       type="button"
       onClick={() => startVoiceInput(field)}
-      className={`p-3 rounded-xl transition-all ${
+      className={`p-3 rounded-xl transition-all flex-shrink-0 min-w-[48px] ${
         isListening === field 
           ? 'bg-red-500 text-white animate-pulse' 
           : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
@@ -155,25 +155,25 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <div className="bg-blue-500 rounded-full p-6 w-20 h-20 mx-auto mb-4">
+          <div className="space-y-4">
+            <div className="text-center mb-6">
+              <div className="bg-blue-500 rounded-full p-4 w-16 h-16 mx-auto mb-3">
                 <User className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">基本資料</h2>
-              <p className="text-gray-600">請填寫您的基本信息</p>
+              <h2 className="text-xl font-bold text-gray-800 mb-2">基本資料</h2>
+              <p className="text-gray-600 text-sm">請填寫您的基本信息</p>
             </div>
 
             {/* 姓名 */}
             <div>
-              <label className="block text-gray-700 mb-3">姓名 *</label>
+              <label className="block text-gray-700 mb-2 text-sm">姓名 *</label>
               <div className="flex gap-3">
                 <input
                   type="text"
                   value={profile.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="flex-1 p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
-                  placeholder="請輸入您的姓名"
+                  className="flex-1 p-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base max-w-[160px]"
+                  placeholder="請輸入姓名"
                 />
                 <VoiceInputButton field="name" />
               </div>
@@ -181,14 +181,14 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
 
             {/* 年齡 */}
             <div>
-              <label className="block text-gray-700 mb-3">年齡 *</label>
+              <label className="block text-gray-700 mb-2 text-sm">年齡 *</label>
               <div className="flex gap-3">
                 <input
                   type="number"
                   value={profile.age}
                   onChange={(e) => handleInputChange('age', e.target.value)}
-                  className="flex-1 p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
-                  placeholder="請輸入您的年齡"
+                  className="flex-1 p-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base max-w-[100px]"
+                  placeholder="年齡"
                   min="1"
                   max="120"
                 />
@@ -198,14 +198,14 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
 
             {/* 性別 */}
             <div>
-              <label className="block text-gray-700 mb-3">性別</label>
-              <div className="grid grid-cols-2 gap-3">
+              <label className="block text-gray-700 mb-2 text-sm">性別</label>
+              <div className="grid grid-cols-2 gap-2">
                 {genderOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => handleInputChange('gender', option.value)}
-                    className={`p-4 rounded-xl border-2 transition-all ${
+                    className={`p-3 rounded-xl border-2 transition-all text-base ${
                       profile.gender === option.value
                         ? 'bg-blue-500 text-white border-blue-600'
                         : 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100'
@@ -217,16 +217,16 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
               </div>
             </div>
 
-            {/* 體重和身高 */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* 體重和身高 - 优化手机端布局 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 mb-3">體重 (kg) *</label>
+                <label className="block text-gray-700 mb-2 text-sm">體重 (kg) *</label>
                 <div className="flex gap-3">
                   <input
                     type="number"
                     value={profile.weight}
                     onChange={(e) => handleInputChange('weight', e.target.value)}
-                    className="flex-1 p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                    className="w-full sm:flex-1 p-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base max-w-[100px]"
                     placeholder="體重"
                     min="20"
                     max="300"
@@ -236,13 +236,13 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-3">身高 (cm) *</label>
+                <label className="block text-gray-700 mb-2 text-sm">身高 (cm) *</label>
                 <div className="flex gap-3">
                   <input
                     type="number"
                     value={profile.height}
                     onChange={(e) => handleInputChange('height', e.target.value)}
-                    className="flex-1 p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg"
+                    className="w-full sm:flex-1 p-3 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base max-w-[100px]"
                     placeholder="身高"
                     min="100"
                     max="250"
@@ -466,16 +466,16 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
       </div>
 
       {/* 主要內容 */}
-      <div className="p-6 max-w-2xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-lg p-8">
+      <div className="p-4 max-w-2xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-lg p-4 sm:p-6">
           {renderStep()}
 
           {/* 導航按鈕 */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+          <div className="flex justify-between mt-6 pt-4 border-t border-gray-200">
             <button
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className={`px-8 py-4 rounded-xl transition-all ${
+              className={`px-6 py-3 rounded-xl transition-all text-sm ${
                 currentStep === 1
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-300 hover:bg-gray-400 text-gray-700'
@@ -487,7 +487,7 @@ export function RegisterScreen({ onNavigate, onRegister }: RegisterScreenProps) 
             <button
               onClick={handleNext}
               disabled={!isStepValid()}
-              className={`px-8 py-4 rounded-xl transition-all ${
+              className={`px-6 py-3 rounded-xl transition-all text-sm ${
                 isStepValid()
                   ? 'bg-blue-500 hover:bg-blue-600 text-white'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
