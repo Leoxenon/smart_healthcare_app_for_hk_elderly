@@ -1,5 +1,6 @@
 import { ArrowLeft, BookOpen, Clock, Volume2, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
+import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
 
 interface KnowledgeScreenProps {
@@ -309,12 +310,15 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                     <Clock className="w-6 h-6" />
                     <span>閱讀時長: {article.readTime}</span>
                   </div>
-                  <button
-                    onClick={() => setSelectedArticle(article.id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 w-full md:w-auto"
-                  >
-                    閱讀
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setSelectedArticle(article.id)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 flex-1 md:flex-none"
+                    >
+                      閱讀
+                    </button>
+                    <VoiceButton text={`${article.title}。閱讀時長：${article.readTime}。點擊閱讀按鈕查看完整內容。`} />
+                  </div>
                 </div>
               </div>
             </div>

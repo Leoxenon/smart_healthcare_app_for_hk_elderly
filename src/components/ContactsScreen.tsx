@@ -1,5 +1,6 @@
 import { ArrowLeft, Phone, MessageCircle, Plus, User, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
+import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
 
 interface ContactsScreenProps {
@@ -166,16 +167,17 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
                 key={contact.id}
                 className="bg-white rounded-3xl shadow-lg p-8 border-4 border-red-200"
               >
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6 mb-6">
                   <div className="text-6xl flex-shrink-0">{contact.avatar}</div>
                   <div className="flex-1">
                     <h2 className="mb-2">{contact.name}</h2>
                     <p className="text-gray-600 mb-3">{contact.relationship}</p>
                     <p className="text-gray-700">{contact.phone}</p>
                   </div>
+                  <VoiceButton text={`緊急聯繫人：${contact.name}，${contact.relationship}，電話：${contact.phone}`} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => handleCall(contact)}
                     className="bg-green-500 hover:bg-green-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 flex items-center justify-center gap-3"
@@ -211,16 +213,17 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
                 key={contact.id}
                 className="bg-white rounded-3xl shadow-lg p-8"
               >
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6 mb-6">
                   <div className="text-6xl flex-shrink-0">{contact.avatar}</div>
                   <div className="flex-1">
                     <h2 className="mb-2">{contact.name}</h2>
                     <p className="text-gray-600 mb-3">{contact.relationship}</p>
                     <p className="text-gray-700">{contact.phone}</p>
                   </div>
+                  <VoiceButton text={`聯繫人：${contact.name}，${contact.relationship}，電話：${contact.phone}`} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     onClick={() => handleCall(contact)}
                     className="bg-green-500 hover:bg-green-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 flex items-center justify-center gap-3"
