@@ -3,11 +3,14 @@ import { useSettings } from '../contexts/SettingsContext';
 import { VoiceButton } from './VoiceButton';
 import { AICharacter } from './AICharacter';
 import { useState, useEffect } from 'react';
+import { speakText } from '../utils/audioManager';
 
 interface AssistantScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
   onVoiceInput?: () => void;
+  incomingText?: string;
+  onConsumeIncoming?: () => void;
 }
 
 interface Message {
@@ -17,7 +20,7 @@ interface Message {
   timestamp: Date;
 }
 
-export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: AssistantScreenProps) {
+export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomingText, onConsumeIncoming }: AssistantScreenProps) {
   const { settings } = useSettings();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -31,6 +34,50 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
   const [currentMessage, setCurrentMessage] = useState<string>('');
   const [isTyping, setIsTyping] = useState(false);
+
+  const getResponse = (text: string) => {
+    let responseText = '';
+    let emotion: 'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping' = 'happy';
+    const t = text.toLowerCase();
+    const sadKeys = ['唔開心', '不開心', '不开心', 'sad', '傷心', '伤心'];
+    const lonelyKeys = ['孤獨', '孤独', 'lonely', '一個人', '一个人'];
+    const worryKeys = ['擔心', '担心', '焦慮', '焦虑', '壓力', '压力', 'anxious', 'worry'];
+    const painKeys = ['痛', '唔舒服', '不舒服', 'pain'];
+    const sleepKeys = ['瞓唔著', '睡不著', '睡不着', '失眠'];
+    const boredKeys = ['悶', '闷', '無聊', '无聊'];
+    if (sadKeys.some(k => t.includes(k)) || lonelyKeys.some(k => t.includes(k))) {
+      responseText = '聽到您唔開心/覺得孤獨，我好關心您。可以同我講講發生咩事嗎？我一直都喺度陪住您。要唔要我播放輕鬆音樂、或者幫您聯絡家人同朋友？您唔係一個人。';
+      emotion = 'caring';
+    } else if (worryKeys.some(k => t.includes(k))) {
+      responseText = '我明白您有擔心同壓力。試吓慢慢深呼吸，吸氣四秒、停四秒、呼氣四秒。我可以為您安排健康資訊，或者聯絡醫生解答疑問。您已經做得好好，慢慢嚟。';
+      emotion = 'caring';
+    } else if (painKeys.some(k => t.includes(k))) {
+      responseText = '您覺得痛或唔舒服，記錄一下症狀同強度會有幫助。我可以帶您去用藥頁面睇用藥時間，或者幫您聯絡醫護人員。如果情況嚴重，請按緊急求助。';
+      emotion = 'caring';
+    } else if (sleepKeys.some(k => t.includes(k))) {
+      responseText = '最近瞓得唔好好辛苦。睡前可以試吓溫水洗手面、少用手機同做放鬆呼吸。我可以播放助眠音樂，或者提供睡眠小貼士。';
+      emotion = 'caring';
+    } else if (boredKeys.some(k => t.includes(k))) {
+      responseText = '覺得悶嘅時候，可以試吓簡單伸展、聽下音樂、或者同朋友傾下計。我可以帶您去活動頁面揀下輕鬆運動或小任務，一齊加油。';
+      emotion = 'happy';
+    } else if (text.includes('用藥') || text.includes('藥物')) {
+      responseText = '好的！我已經為您設置了用藥提醒。您今天還有3種藥物需要服用。您可以到用藥管理頁面查看詳細信息。需要我現在為您播報嗎？';
+      emotion = 'caring';
+    } else if (text.includes('血糖')) {
+      responseText = '管理血糖的關鍵包括：1) 定時測量血糖；2) 控制飲食，少吃高糖食物；3) 適量運動；4) 按時服藥。您可以在健康數據頁面記錄每日血糖值，我會幫您追蹤趨勢。';
+      emotion = 'thinking';
+    } else if (text.includes('緊急') || text.includes('求助')) {
+      responseText = '我明白您需要緊急幫助。請點擊屏幕右下角的紅色緊急求助按鈕，系統會立即通知您的家人和醫護人員。或者您也可以告訴我具體情況，我會提供相應建議。';
+      emotion = 'caring';
+    } else if (text.includes('飲食') || text.includes('食物')) {
+      responseText = '健康飲食建議：1) 多吃蔬菜水果；2) 選擇全穀類食物；3) 適量攝入優質蛋白質；4) 少油少鹽少糖；5) 每天飲水6-8杯。您可以在知識庫查看更詳細的飲食指南。';
+      emotion = 'happy';
+    } else {
+      responseText = '謝謝您的分享。我已經記錄咗您的情況，如果需要更專業嘅建議，可以聯絡醫生。我亦都可以陪您傾吓、或者提供相關健康資訊。';
+      emotion = 'caring';
+    }
+    return { responseText, emotion };
+  };
 
   const quickReplies = [
     { text: '我需要用藥提醒', icon: '💊', emotion: 'caring' as const },
@@ -65,59 +112,21 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
     return () => clearInterval(greetingInterval);
   }, []);
 
-  const handleQuickReply = (text: string, emotion: 'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping' = 'happy') => {
-    // 設置AI表情
+  const handleQuickReply = (text: string) => {
     setAiEmotion('thinking');
     setCurrentMessage('讓我想想...');
-    
-    const userMessage: Message = {
-      id: messages.length + 1,
-      type: 'user',
-      text: text,
-      timestamp: new Date(),
-    };
-
+    const userMessage: Message = { id: messages.length + 1, type: 'user', text, timestamp: new Date() };
     setMessages([...messages, userMessage]);
     setIsTyping(true);
-
-    // Mock assistant response
     setTimeout(() => {
       setAiEmotion('talking');
       setCurrentMessage('');
-      
-      let responseText = '';
-      
-      if (text.includes('用藥') || text.includes('藥物')) {
-        responseText = '好的！我已經為您設置了用藥提醒。您今天還有3種藥物需要服用。您可以到用藥管理頁面查看詳細信息。需要我現在為您播報嗎？';
-        setAiEmotion('caring');
-      } else if (text.includes('血糖')) {
-        responseText = '管理血糖的關鍵包括：1) 定時測量血糖；2) 控制飲食，少吃高糖食物；3) 適量運動；4) 按時服藥。您可以在健康數據頁面記錄每日血糖值，我會幫您追蹤趨勢。';
-        setAiEmotion('thinking');
-      } else if (text.includes('緊急') || text.includes('求助')) {
-        responseText = '我明白您需要緊急幫助。請點擊屏幕右下角的紅色緊急求助按鈕，系統會立即通知您的家人和醫護人員。或者您也可以告訴我具體情況，我會提供相應建議。';
-        setAiEmotion('caring');
-      } else if (text.includes('飲食') || text.includes('食物')) {
-        responseText = '健康飲食建議：1) 多吃蔬菜水果；2) 選擇全穀類食物；3) 適量攝入優質蛋白質；4) 少油少鹽少糖；5) 每天飲水6-8杯。您可以在知識庫查看更詳細的飲食指南。';
-        setAiEmotion('happy');
-      } else {
-        responseText = '謝謝您的提問！我已經記錄了您的問題。如果您需要更專業的建議，建議諮詢您的醫生。我可以幫您安排與醫生的聯繫，或者查看健康知識庫中的相關文章。';
-        setAiEmotion('caring');
-      }
-
-      const assistantMessage: Message = {
-        id: messages.length + 2,
-        type: 'assistant',
-        text: responseText,
-        timestamp: new Date(),
-      };
-
+      const { responseText, emotion } = getResponse(text);
+      setAiEmotion(emotion);
+      const assistantMessage: Message = { id: messages.length + 2, type: 'assistant', text: responseText, timestamp: new Date() };
       setMessages(prev => [...prev, assistantMessage]);
       setIsTyping(false);
-      
-      // 說話完畢後回到愉快表情
-      setTimeout(() => {
-        setAiEmotion('happy');
-      }, 3000);
+      setTimeout(() => { setAiEmotion('happy'); }, 3000);
     }, 2000);
   };
 
@@ -127,29 +136,46 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
     }
   };
 
+  useEffect(() => {
+    if (!incomingText) return;
+    setAiEmotion('thinking');
+    setCurrentMessage('讓我想想...');
+    const userMessage: Message = { id: messages.length + 1, type: 'user', text: incomingText, timestamp: new Date() };
+    setMessages(prev => [...prev, userMessage]);
+    setIsTyping(true);
+    setTimeout(() => {
+      setAiEmotion('talking');
+      setCurrentMessage('');
+      const { responseText, emotion } = getResponse(incomingText);
+      setAiEmotion(emotion);
+      const assistantMessage: Message = { id: messages.length + 2, type: 'assistant', text: responseText, timestamp: new Date() };
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsTyping(false);
+      speakText(responseText, { lang: settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK', rate: settings.voiceSpeed, volume: settings.voiceVolume });
+      setTimeout(() => { setAiEmotion('happy'); }, 3000);
+      onConsumeIncoming?.();
+    }, 1500);
+  }, [incomingText]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* 頂部導航 */}
       <div className="bg-white shadow-md p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => onNavigate('dashboard')}
-              className="p-4 hover:bg-gray-100 rounded-2xl transition-all"
-              aria-label="返回"
-            >
-              <ArrowLeft className="w-8 h-8 text-gray-700" />
-            </button>
-            <h1 className="text-purple-700">AI健康助手 - 小健</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => onNavigate('dashboard')}
+                className="p-4 hover:bg-gray-100 rounded-2xl transition-all"
+                aria-label="返回"
+              >
+                <ArrowLeft className="w-8 h-8 text-gray-700" />
+              </button>
+              <h1 className="text-purple-700">AI健康助手 - 小健</h1>
+            </div>
           </div>
-          <VoiceButton 
-            text="這是AI健康助手小健。您可以通過語音與小健對話，獲取健康建議和幫助。小健會用親切的方式回應您。"
-            size="large"
-          />
         </div>
-      </div>
 
-      <div className="p-6 max-w-6xl mx-auto">
+      <div className="p-6 max-w-6xl mx-auto pb-40">
         {/* AI角色展示區 */}
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border-4 border-gradient-to-r from-blue-200 to-purple-200">
           <div className="flex flex-col lg:flex-row items-center gap-8">
@@ -220,7 +246,7 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
                 <div
                   className={`max-w-2xl rounded-3xl p-6 shadow-lg ${
                     message.type === 'user'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                      ? 'bg-purple-50 border-2 border-purple-200'
                       : 'bg-white border-4 border-purple-100'
                   }`}
                 >
@@ -229,10 +255,10 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
                       <AICharacter emotion="happy" size="small" />
                     )}
                     <div className="flex-1">
-                      <p className={`text-lg leading-relaxed ${message.type === 'user' ? 'text-white' : 'text-gray-800'}`}>
+                      <p className={`text-lg leading-relaxed ${message.type === 'user' ? 'text-gray-800' : 'text-gray-800'}`}>
                         {message.text}
                       </p>
-                      <p className={`mt-3 text-sm ${message.type === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
+                      <p className={`mt-3 text-sm ${message.type === 'user' ? 'text-gray-600' : 'text-gray-600'}`}>
                         {message.timestamp.toLocaleTimeString('zh-HK', {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -258,7 +284,7 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
             {quickReplies.map((reply, index) => (
               <button
                 key={index}
-                onClick={() => handleQuickReply(reply.text, reply.emotion)}
+                onClick={() => handleQuickReply(reply.text)}
                 className="bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-blue-50 text-gray-800 rounded-2xl px-8 py-6 transition-all hover:scale-105 hover:shadow-lg border-2 border-gray-200 hover:border-purple-300 flex items-center gap-4"
               >
                 <span className="text-3xl">{reply.icon}</span>
@@ -269,32 +295,17 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
         </div>
       </div>
 
-      {/* 語音輸入區域 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-purple-200 shadow-2xl p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center gap-6">
-            <div className="text-center">
-              <p className="text-gray-600 mb-2">💭 想要與小健語音對話嗎？</p>
-            </div>
-            <button
-              onClick={handleVoiceInput}
-              className={`bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-3xl px-12 py-8 transition-all hover:scale-105 shadow-xl flex items-center gap-6 ${
-                isVoiceMode ? 'ring-4 ring-purple-300 animate-pulse' : ''
-              }`}
-              aria-label="語音輸入"
-            >
-              <Mic className="w-12 h-12" />
-              <div className="text-left">
-                <div className="text-xl font-bold">
-                  {isVoiceMode ? '🎤 正在聆聽' : '🎤 按此說話'}
-                </div>
-                <div className="text-sm opacity-90">
-                  與小健語音對話
-                </div>
-              </div>
-            </button>
-          </div>
-        </div>
+      {/* 語音輸入區域 - 圓形紫色按鈕 */}
+      <div className="fixed bottom-6 left-0 right-0 flex items-center justify-center">
+        <button
+          onClick={handleVoiceInput}
+          className={`bg-purple-500 hover:bg-purple-600 text-white rounded-full p-6 shadow-2xl transition-all hover:scale-110 flex items-center justify-center ${
+            isVoiceMode ? 'ring-4 ring-purple-300 animate-pulse' : ''
+          }`}
+          aria-label="語音輸入"
+        >
+          <Mic className="w-10 h-10" />
+        </button>
       </div>
     </div>
   );

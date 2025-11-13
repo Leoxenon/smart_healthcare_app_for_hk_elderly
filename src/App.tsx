@@ -24,6 +24,7 @@ export default function App() {
   const [showVoiceListening, setShowVoiceListening] = useState(false);
   const [showRescueVisualization, setShowRescueVisualization] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [pendingAssistantText, setPendingAssistantText] = useState<string>('');
   const [settings, setSettings] = useState({
     fontSize: 'large',
     theme: 'light',
@@ -66,6 +67,12 @@ export default function App() {
 
   const handleVoiceCommand = (command: string) => {
     const t = command.toLowerCase();
+    const emotionKeys = ['唔開心','不開心','不开心','sad','傷心','伤心','孤獨','孤独','lonely','一個人','一个人','擔心','担心','焦慮','焦虑','壓力','压力','anxious','worry','痛','唔舒服','不舒服','pain','瞓唔著','睡不著','睡不着','失眠','悶','闷','無聊','无聊'];
+    if (emotionKeys.some(k => t.includes(k))) {
+      setPendingAssistantText(command);
+      navigateTo('assistant');
+      return;
+    }
     
     // 用药管理
     if (t.includes('用藥') || t.includes('藥物') || t.includes('用药') || t.includes('药物') || t.includes('吃药') || t.includes('medicine') || t.includes('medication') || t.includes('pill') || t.includes('drug')) {
@@ -148,7 +155,7 @@ export default function App() {
       case 'knowledge':
         return <KnowledgeScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'assistant':
-        return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
+        return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} incomingText={pendingAssistantText} onConsumeIncoming={() => setPendingAssistantText('')} />;
       case 'activity':
         return <ActivityScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'contacts':
