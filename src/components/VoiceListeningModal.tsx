@@ -12,17 +12,37 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
   const [isListening, setIsListening] = useState(true);
   const [recognizedText, setRecognizedText] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [currentLangIndex, setCurrentLangIndex] = useState(0);
+
+  // 支持的语言列表 - 按优先级排序
+  const supportedLanguages = [
+    { code: 'zh-HK', name: '粵語' },
+    { code: 'zh-CN', name: '普通話' },
+    { code: 'en-US', name: 'English' }
+  ];
 
   useEffect(() => {
     if (!isListening) return;
 
-    const recogLang = settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK';
-    const promptText = recogLang === 'en-US' ? 'Listening, please speak' : recogLang === 'zh-CN' ? '正在聆听您的指令，请讲话' : '正在聆聽您嘅指令，請講嘢';
+    // 优先使用用户设置的语言，然后尝试其他语言
+    const userLang = settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK';
+    const orderedLangs = [
+      userLang,
+      ...supportedLanguages.map(l => l.code).filter(l => l !== userLang)
+    ];
+    
+    const recogLang = orderedLangs[currentLangIndex];
+    const promptText = recogLang === 'en-US' ? 'Listening in multiple languages, please speak' : 
+                       recogLang === 'zh-CN' ? '正在聆听，支持粤语、普通话和英文' : 
+                       '正在聆聽，支援粵語、普通話同英文';
 
-    const utterance = new SpeechSynthesisUtterance(promptText);
-    utterance.lang = recogLang;
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    // 只在第一次播放提示
+    if (currentLangIndex === 0) {
+      const utterance = new SpeechSynthesisUtterance(promptText);
+      utterance.lang = recogLang;
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
 
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (SpeechRecognition) {
@@ -33,27 +53,48 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
 
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript as string;
-        setRecognizedText(transcript);
-        setShowConfirmation(true);
-        setIsListening(false);
+        const confidence = event.results[0][0].confidence;
+        
+        console.log(`Recognized in ${recogLang}: "${transcript}" (confidence: ${confidence})`);
+        
+        // 如果识别置信度高于0.5，接受结果
+        if (confidence > 0.5 || currentLangIndex >= orderedLangs.length - 1) {
+          setRecognizedText(transcript);
+          setShowConfirmation(true);
+          setIsListening(false);
+        } else {
+          // 尝试下一种语言
+          setCurrentLangIndex(prev => prev + 1);
+        }
       };
 
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        setShowConfirmation(true);
-        // 根据错误类型设置不同的提示
-        if (event.error === 'no-speech') {
-          setRecognizedText('未能識別到語音，請重試');
-        } else if (event.error === 'network') {
-          setRecognizedText('網絡錯誤，請檢查網絡連接');
+        console.error('Speech recognition error:', event.error, 'in', recogLang);
+        
+        // 如果是no-speech错误且还有其他语言可以尝试，继续尝试
+        if (event.error === 'no-speech' && currentLangIndex < orderedLangs.length - 1) {
+          setCurrentLangIndex(prev => prev + 1);
         } else {
-          setRecognizedText('語音識別失敗，請重試');
+          setIsListening(false);
+          setShowConfirmation(true);
+          // 根据错误类型设置不同的提示
+          if (event.error === 'no-speech') {
+            setRecognizedText('未能識別到語音，請重試');
+          } else if (event.error === 'network') {
+            setRecognizedText('網絡錯誤，請檢查網絡連接');
+          } else {
+            setRecognizedText('語音識別失敗，請重試');
+          }
         }
       };
 
       recognition.onend = () => {
-        setIsListening(false);
+        // 如果还有其他语言要尝试，不要关闭监听状态
+        if (currentLangIndex < orderedLangs.length - 1 && !showConfirmation) {
+          // 将在下一个useEffect中重新启动
+        } else {
+          setIsListening(false);
+        }
       };
 
       recognition.start();
@@ -65,7 +106,7 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
       setShowConfirmation(true);
       setRecognizedText('');
     }
-  }, [isListening, settings.language]);
+  }, [isListening, currentLangIndex]);
 
   const handleConfirm = () => {
     onCommand(recognizedText);
@@ -75,6 +116,7 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
   const handleRetry = () => {
     setRecognizedText('');
     setShowConfirmation(false);
+    setCurrentLangIndex(0); // 重置语言索引
     setIsListening(true);
   };
 
@@ -109,47 +151,24 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
               <div className="w-3 h-12 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
             <p className="text-gray-700 text-xl mb-4">
-              {settings.language === 'english' ? 'Please say your command' : settings.language === 'mandarin' ? '請說出您的指令' : '請用粵語講出您嘅指令'}
+              {settings.language === 'english' ? 'Speak in Cantonese, Mandarin, or English' : settings.language === 'mandarin' ? '请用粤语、普通话或英文说出指令' : '請用粵語、普通話或英文講出指令'}
+            </p>
+            <p className="text-gray-500 text-sm mb-4">
+              {settings.language === 'english' ? '🌐 Multi-language support enabled' : settings.language === 'mandarin' ? '🌐 已启用多语言识别' : '🌐 已啟用多語言識別'}
             </p>
             <div className="bg-blue-50 rounded-2xl p-6 mt-6 text-left">
               <p className="text-gray-700 font-semibold mb-3">
-                {settings.language === 'english' ? '📢 Available Commands:' : settings.language === 'mandarin' ? '📢 可用指令：' : '📢 可用指令：'}
+                {settings.language === 'english' ? '📢 Available Commands (Any Language):' : settings.language === 'mandarin' ? '📢 可用指令（任何语言）：' : '📢 可用指令（任何語言）：'}
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600">
-                {settings.language === 'english' ? (
-                  <>
-                    <p>• "Open medication"</p>
-                    <p>• "Health data"</p>
-                    <p>• "Knowledge base"</p>
-                    <p>• "Contact doctor"</p>
-                    <p>• "Recipe"</p>
-                    <p>• "Risk prediction"</p>
-                    <p>• "Settings"</p>
-                    <p>• "Emergency help"</p>
-                  </>
-                ) : settings.language === 'mandarin' ? (
-                  <>
-                    <p>• 「开启用药提醒」</p>
-                    <p>• 「健康数据」</p>
-                    <p>• 「知识库」</p>
-                    <p>• 「联系医生」</p>
-                    <p>• 「食谱」</p>
-                    <p>• 「风险预测」</p>
-                    <p>• 「设置」</p>
-                    <p>• 「紧急求助」</p>
-                  </>
-                ) : (
-                  <>
-                    <p>• 「今日用藥」</p>
-                    <p>• 「健康數據」</p>
-                    <p>• 「健康知識」</p>
-                    <p>• 「聯絡醫生」</p>
-                    <p>• 「AI菜譜」</p>
-                    <p>• 「AI風險預測」</p>
-                    <p>• 「設置」</p>
-                    <p>• 「緊急求助」</p>
-                  </>
-                )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600 text-sm">
+                <p>• 今日用藥 / 用药 / Medication</p>
+                <p>• 健康數據 / 健康数据 / Health Data</p>
+                <p>• 健康知識 / 知识 / Knowledge</p>
+                <p>• 聯絡醫生 / 联系医生 / Contact Doctor</p>
+                <p>• AI菜譜 / 食谱 / Recipe</p>
+                <p>• 風險預測 / 风险预测 / Risk Prediction</p>
+                <p>• 設置 / 设置 / Settings</p>
+                <p>• 緊急求助 / 紧急求助 / Emergency</p>
               </div>
             </div>
           </div>
