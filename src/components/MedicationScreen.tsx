@@ -1,5 +1,7 @@
 import { ArrowLeft, Plus, Check, Clock, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
+import { VoiceButton } from './VoiceButton';
+import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
 
 interface MedicationScreenProps {
@@ -168,6 +170,7 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
                     <p className="text-gray-600">{med.instructions}</p>
                   </div>
                 </div>
+                <VoiceButton text={med.voiceText} />
               </div>
 
               {med.taken ? (
@@ -205,6 +208,8 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
           <span>添加用藥</span>
         </button>
       </div>
+
+      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }
