@@ -1,7 +1,5 @@
-import { ArrowLeft, TrendingUp, AlertTriangle, Heart, Activity, CheckCircle, Calendar, Phone, Mic } from 'lucide-react';
+import { ArrowLeft, TrendingUp, AlertTriangle, Heart, Activity, CheckCircle, Calendar, Phone, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
-import { VoiceButton } from './VoiceButton';
-import { EmergencyButton } from './EmergencyButton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
 
@@ -128,7 +126,7 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
   const overallRisk = getRiskLevel(currentRisk.overall);
 
   return (
-    <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -141,16 +139,33 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
             </button>
             <h1 className="text-red-700">AI健康風險預測</h1>
           </div>
-          <VoiceButton 
-            text="AI健康風險預測頁面。根據您嘅健康數據，分析心腦血管疾病風險，並提供個人化預防建議。"
-            size="large"
-          />
+          {/* 设置按钮 - 替换原来的语音按钮 */}
+          <button
+            onClick={() => onNavigate('settings')}
+            className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+            aria-label="設置"
+          >
+            <Settings className="w-6 h-6 text-gray-600" />
+            <span className="text-sm text-gray-600">設置</span>
+          </button>
         </div>
       </div>
 
       <div className="p-6 max-w-6xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
           <div className="flex flex-col items-center text-center">
+            {/* 紧急求助按钮 - 移到AI角色正上方 */}
+            <div className="mb-4">
+              <button
+                onClick={onEmergency}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+                aria-label="緊急求助"
+              >
+                <span className="text-lg">🆘</span>
+                <span className="font-bold">緊急求助</span>
+              </button>
+            </div>
+
             <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
             </div>
@@ -374,8 +389,6 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
           </div>
         </div>
       )}
-
-      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }

@@ -1,7 +1,5 @@
-import { ArrowLeft, BookOpen, Clock, Volume2, Mic } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Volume2, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
-import { VoiceButton } from './VoiceButton';
-import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
 
 interface KnowledgeScreenProps {
@@ -143,7 +141,7 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
     if (!article) return null;
 
     return (
-      <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
+      <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
@@ -156,14 +154,35 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
               </button>
               <h1 className="text-yellow-700">文章詳情</h1>
             </div>
-            <VoiceButton 
-              text={`文章標題：${article.title}。閱讀時長約${article.readTime}。`}
-              size="large"
-            />
+            {/* 设置按钮 - 替换原来的语音按钮 */}
+            <button
+              onClick={() => onNavigate('settings')}
+              className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+              aria-label="設置"
+            >
+              <Settings className="w-6 h-6 text-gray-600" />
+              <span className="text-sm text-gray-600">設置</span>
+            </button>
           </div>
         </div>
 
         <div className="p-6 max-w-4xl mx-auto">
+          {/* 紧急求助按钮卡片 - 移到顶部 */}
+          <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-4">
+                <button
+                  onClick={onEmergency}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+                  aria-label="緊急求助"
+                >
+                  <span className="text-lg">🆘</span>
+                  <span className="font-bold">緊急求助</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white rounded-3xl shadow-lg p-8">
             <div className="text-center mb-8">
               <div className="text-8xl mb-6">{article.thumbnail}</div>
@@ -177,12 +196,7 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
             <div className="space-y-8">
               {article.content.map((paragraph, index) => (
                 <div key={index} className="bg-gray-50 rounded-2xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1">
-                      <p className="text-gray-800 leading-relaxed">{paragraph}</p>
-                    </div>
-                    <VoiceButton text={paragraph} />
-                  </div>
+                  <p className="text-gray-800 leading-relaxed mb-4">{paragraph}</p>
                 </div>
               ))}
             </div>
@@ -202,14 +216,12 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
             </button>
           </div>
         </div>
-
-        <EmergencyButton onClick={onEmergency} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -222,16 +234,33 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
             </button>
             <h1 className="text-yellow-700">健康知識庫</h1>
           </div>
-          <VoiceButton 
-            text="健康知識庫頁面。選擇分類查看相關的健康文章和建議。"
-            size="large"
-          />
+          {/* 设置按钮 - 替换原来的语音按钮 */}
+          <button
+            onClick={() => onNavigate('settings')}
+            className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+            aria-label="設置"
+          >
+            <Settings className="w-6 h-6 text-gray-600" />
+            <span className="text-sm text-gray-600">設置</span>
+          </button>
         </div>
       </div>
 
       <div className="p-6 max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
           <div className="flex flex-col items-center text-center">
+            {/* 紧急求助按钮 - 移到AI角色正上方 */}
+            <div className="mb-4">
+              <button
+                onClick={onEmergency}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+                aria-label="緊急求助"
+              >
+                <span className="text-lg">🆘</span>
+                <span className="font-bold">緊急求助</span>
+              </button>
+            </div>
+
             <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
             </div>
@@ -283,14 +312,11 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                     閱讀
                   </button>
                 </div>
-                <VoiceButton text={`文章：${article.title}，閱讀時長約${article.readTime}。`} />
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }

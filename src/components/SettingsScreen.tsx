@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ArrowLeft, Type, Volume2, Palette, Eye, Users, HelpCircle, Mic } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';

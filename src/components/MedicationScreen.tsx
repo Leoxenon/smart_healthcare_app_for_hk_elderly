@@ -1,7 +1,5 @@
-import { ArrowLeft, Plus, Check, Clock, Mic } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Clock, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
-import { VoiceButton } from './VoiceButton';
-import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
 
 interface MedicationScreenProps {
@@ -93,7 +91,7 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -106,16 +104,33 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
             </button>
             <h1 className="text-green-700">今天的用藥</h1>
           </div>
-          <VoiceButton 
-            text="今天的用藥頁面。以下顯示您今天需要服用的所有藥物，包括時間、藥名和用量。請按時服用。"
-            size="large"
-          />
+          {/* 设置按钮 - 替换原来的语音按钮 */}
+          <button
+            onClick={() => onNavigate('settings')}
+            className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+            aria-label="設置"
+          >
+            <Settings className="w-6 h-6 text-gray-600" />
+            <span className="text-sm text-gray-600">設置</span>
+          </button>
         </div>
       </div>
 
       <div className="p-6 max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
           <div className="flex flex-col items-center text-center">
+            {/* 紧急求助按钮 - 移到AI角色正上方 */}
+            <div className="mb-4">
+              <button
+                onClick={onEmergency}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+                aria-label="緊急求助"
+              >
+                <span className="text-lg">🆘</span>
+                <span className="font-bold">緊急求助</span>
+              </button>
+            </div>
+
             <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
             </div>
@@ -149,7 +164,6 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
                     <p className="text-gray-600">{med.instructions}</p>
                   </div>
                 </div>
-                <VoiceButton text={med.voiceText} />
               </div>
 
               {med.taken ? (
@@ -187,8 +201,6 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
           <span>添加用藥</span>
         </button>
       </div>
-
-      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }

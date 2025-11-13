@@ -1,7 +1,5 @@
-import { ArrowLeft, Mic, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowLeft, Mic, TrendingUp, TrendingDown, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
-import { VoiceButton } from './VoiceButton';
-import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -128,7 +126,6 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
             <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
               <div className="flex items-center justify-between mb-6">
                 <h2>最近7天血壓趨勢</h2>
-                <VoiceButton text="最近七天血壓趨勢圖。顯示您的收縮壓和舒張壓變化。" />
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={bloodPressureData}>
@@ -212,7 +209,6 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
             <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
               <div className="flex items-center justify-between mb-6">
                 <h2>最近7天血糖趨勢</h2>
-                <VoiceButton text="最近七天血糖趨勢圖。顯示您的空腹血糖變化。" />
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={glucoseData}>
@@ -278,7 +274,6 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
             <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
               <div className="flex items-center justify-between mb-6">
                 <h2>最近7天體重趨勢</h2>
-                <VoiceButton text="最近七天體重趨勢圖。顯示您的體重變化。" />
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={weightData}>
@@ -339,7 +334,6 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
             <div className="bg-white rounded-3xl shadow-lg p-8 mb-6">
               <div className="flex items-center justify-between mb-6">
                 <h2>最近7天心率趨勢</h2>
-                <VoiceButton text="最近七天心率趨勢圖。顯示您的心跳變化。" />
               </div>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={heartRateData}>
@@ -404,7 +398,7 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
@@ -417,16 +411,33 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
             </button>
             <h1 className="text-blue-700">健康數據記錄</h1>
           </div>
-          <VoiceButton 
-            text="健康數據記錄頁面。您可以查看和記錄血壓、血糖、體重��心率數據。"
-            size="large"
-          />
+          {/* 设置按钮 - 替换原来的语音按钮 */}
+          <button
+            onClick={() => onNavigate('settings')}
+            className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+            aria-label="設置"
+          >
+            <Settings className="w-6 h-6 text-gray-600" />
+            <span className="text-sm text-gray-600">設置</span>
+          </button>
         </div>
       </div>
 
       <div className="p-6 max-w-4xl mx-auto">
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
           <div className="flex flex-col items-center text-center">
+            {/* 紧急求助按钮 - 移到AI角色正上方 */}
+            <div className="mb-4">
+              <button
+                onClick={onEmergency}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+                aria-label="緊急求助"
+              >
+                <span className="text-lg">🆘</span>
+                <span className="font-bold">緊急求助</span>
+              </button>
+            </div>
+
             <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
             </div>
@@ -458,8 +469,6 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
 
         {renderContent()}
       </div>
-
-      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }
