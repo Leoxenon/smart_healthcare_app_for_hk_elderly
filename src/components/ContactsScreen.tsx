@@ -89,7 +89,7 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
       '需要我播報某位聯繫人的電話嗎？'
     ];
     const m = msgs[Math.floor(Math.random() * msgs.length)];
-    setAiEmotion('caring');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(m);
     
     speakText(m, {

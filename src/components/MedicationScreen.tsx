@@ -85,7 +85,7 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
       '用藥要配合醫生建議，如有不適請聯絡醫生。'
     ];
     const m = msgs[Math.floor(Math.random() * msgs.length)];
-    setAiEmotion('caring');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(m);
     
     speakText(m, {

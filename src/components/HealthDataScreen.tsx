@@ -85,7 +85,7 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
       '保持定期記錄有助及早發現問題。'
     ];
     const m = msgs[Math.floor(Math.random() * msgs.length)];
-    setAiEmotion('thinking');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(m);
     
     speakText(m, {

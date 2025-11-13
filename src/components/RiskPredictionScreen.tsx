@@ -58,7 +58,7 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
       '有疑問可隨時問我，或者聯絡醫生。'
     ];
     const m = msgs[Math.floor(Math.random() * msgs.length)];
-    setAiEmotion('thinking');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(m);
     
     speakText(m, {

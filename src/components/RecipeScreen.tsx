@@ -186,7 +186,7 @@ export function RecipeScreen({ onNavigate, onEmergency, onVoiceInput }: RecipeSc
       '飲食配合病情管理更有效。'
     ];
     const m = msgs[Math.floor(Math.random() * msgs.length)];
-    setAiEmotion('happy');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(m);
     
     speakText(m, {

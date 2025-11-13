@@ -181,7 +181,7 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
     ];
     
     const randomMessage = simpleGreetings[Math.floor(Math.random() * simpleGreetings.length)];
-    setAiEmotion('caring');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(randomMessage);
     
     speakText(randomMessage, {

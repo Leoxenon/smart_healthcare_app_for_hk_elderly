@@ -156,9 +156,9 @@ export function AICharacter({
       onClick={onClick}
       onKeyDown={onKeyDown}
     >
-      {/* 光環效果 */}
+      {/* 光環效果 - 已取消波纹动画 */}
       {showAura && (
-        <div className="absolute inset-0 animate-ping">
+        <div className="absolute inset-0">
           <div 
             className="w-full h-full rounded-full opacity-20"
             style={{ backgroundColor: getCharacterColor() }}

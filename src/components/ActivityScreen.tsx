@@ -50,7 +50,7 @@ export function ActivityScreen({ onNavigate, onEmergency, onVoiceInput }: Activi
       '保持運動可降低風險，您做得到！'
     ];
     const m = msgs[Math.floor(Math.random() * msgs.length)];
-    setAiEmotion('happy');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(m);
     
     speakText(m, {

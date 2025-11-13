@@ -123,7 +123,7 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
       <div className="bg-red-600 p-6 shadow-2xl">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-4">
-            <div className="bg-white rounded-full p-3 animate-pulse">
+            <div className="bg-white rounded-full p-3">
               <Ambulance className="w-10 h-10 text-red-600" />
             </div>
             <div>
@@ -149,7 +149,7 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
               {/* User Location (Center) */}
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75" style={{ width: '60px', height: '60px' }}></div>
+                  <div className="absolute inset-0 bg-red-500 rounded-full opacity-75" style={{ width: '60px', height: '60px' }}></div>
                   <div className="relative bg-red-600 rounded-full p-4 shadow-2xl">
                     <MapPin className="w-8 h-8 text-white" />
                   </div>
@@ -163,7 +163,7 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
 
               {/* Ambulance Icon */}
               <div className="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="relative animate-bounce">
+                <div className="relative">
                   <div className="bg-blue-600 rounded-full p-4 shadow-2xl">
                     <span style={{ fontSize: '32px' }}>🚑</span>
                   </div>
@@ -182,7 +182,6 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
                       stroke="#3B82F6"
                       strokeWidth="3"
                       strokeDasharray="10 5"
-                      className="animate-pulse"
                     />
                   </svg>
                 </div>
@@ -190,7 +189,7 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
 
               {/* Social Worker Icon */}
               <div className="absolute top-1/3 right-1/3 transform translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="relative animate-bounce" style={{ animationDelay: '0.2s' }}>
+                <div className="relative">
                   <div className="bg-green-600 rounded-full p-4 shadow-2xl">
                     <span style={{ fontSize: '32px' }}>👩‍⚕️</span>
                   </div>
@@ -263,7 +262,7 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="bg-blue-500 rounded-full p-3 animate-pulse">
+                  <div className="bg-blue-500 rounded-full p-3">
                     <Ambulance className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">

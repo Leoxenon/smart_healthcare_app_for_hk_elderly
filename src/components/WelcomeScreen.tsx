@@ -44,7 +44,7 @@ export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScree
     ];
     
     const randomMessage = welcomeGreetings[Math.floor(Math.random() * welcomeGreetings.length)];
-    setAiEmotion('caring');
+    setAiEmotion('talking'); // 说话时使用蓝色
     setCurrentMessage(randomMessage);
     
     speakText(randomMessage, {
