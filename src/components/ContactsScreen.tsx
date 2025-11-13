@@ -2,6 +2,7 @@ import { ArrowLeft, Phone, MessageCircle, Plus, User, Mic, Settings } from 'luci
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface ContactsScreenProps {
   onNavigate: (screen: string) => void;
@@ -73,7 +74,15 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
   };
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    // 如果正在说话，点击停止
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以幫您快速聯絡醫生或家屬');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '如需緊急幫助，我可以引導您撥打電話。',
       '我可以幫您確認聯繫人資訊是否最新。',
@@ -82,17 +91,23 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('caring');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以幫您快速聯絡醫生或家屬');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以幫您快速聯絡醫生或家屬');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以幫您快速聯絡醫生或家屬');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

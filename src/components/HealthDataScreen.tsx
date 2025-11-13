@@ -2,6 +2,7 @@ import { ArrowLeft, Mic, TrendingUp, TrendingDown, Settings } from 'lucide-react
 import { AICharacter } from './AICharacter';
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface HealthDataScreenProps {
   onNavigate: (screen: string) => void;
@@ -69,7 +70,15 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    // 如果正在说话，点击停止
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以幫您記錄數據或解讀趨勢');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '需要我幫您記錄血壓、血糖、體重或心率嗎？',
       '我可以解釋趨勢變化，提供健康建議。',
@@ -78,17 +87,23 @@ export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: Heal
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('thinking');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以幫您記錄數據或解讀趨勢');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以幫您記錄數據或解讀趨勢');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以幫您記錄數據或解讀趨勢');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   const handleVoiceInput = () => {

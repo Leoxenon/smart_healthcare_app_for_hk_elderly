@@ -117,7 +117,14 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
   const currentArticles = articles[selectedCategory as keyof typeof articles] || [];
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    // 如果正在说话，点击停止
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以為您推薦文章或朗讀重點');
+      setAiEmotion('happy');
+      return;
+    }
     
     const msgs = [
       '需要我推薦適合您健康狀況的文章嗎？',

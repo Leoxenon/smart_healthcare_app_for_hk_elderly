@@ -1,6 +1,7 @@
 import { Mic, X, Check, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
+import { speakText } from '../utils/audioManager';
 
 interface VoiceListeningModalProps {
   onClose: () => void;
@@ -36,12 +37,13 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
                        recogLang === 'zh-CN' ? '正在聆听，支持粤语、普通话和英文' : 
                        '正在聆聽，支援粵語、普通話同英文';
 
-    // 只在第一次播放提示
+    // 只在第一次播放提示，使用全局音频管理
     if (currentLangIndex === 0) {
-      const utterance = new SpeechSynthesisUtterance(promptText);
-      utterance.lang = recogLang;
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
+      speakText(promptText, {
+        lang: recogLang,
+        rate: 0.9,
+        volume: 0.8,
+      });
     }
 
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;

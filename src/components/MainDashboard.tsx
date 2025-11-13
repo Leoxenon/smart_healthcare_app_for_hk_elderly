@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { Mic, MessageCircle, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface MainDashboardProps {
   onNavigate: (screen: string) => void;
@@ -157,8 +158,12 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
 
   // 点击AI角色交互
   const handleAIClick = () => {
-    // 如果正在播放语音，忽略点击
+    // 如果正在播放语音，点击停止
     if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('');
+      setAiEmotion('happy');
       return;
     }
 
@@ -176,21 +181,23 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
     const randomMessage = simpleGreetings[Math.floor(Math.random() * simpleGreetings.length)];
     setAiEmotion('caring');
     setCurrentMessage(randomMessage);
-    setIsSpeaking(true);
     
-    // 播放粤语语音问候
-    const utterance = new SpeechSynthesisUtterance(randomMessage);
-    utterance.lang = 'zh-HK';
-    utterance.rate = 0.8;
-    utterance.volume = 0.8;
-    
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('');
-      setAiEmotion('happy');
-    };
-    
-    window.speechSynthesis.speak(utterance);
+    speakText(randomMessage, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

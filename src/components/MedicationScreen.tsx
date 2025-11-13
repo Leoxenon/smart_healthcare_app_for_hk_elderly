@@ -2,7 +2,7 @@ import { ArrowLeft, Plus, Check, Clock, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
-import { speakText } from '../utils/audioManager';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface MedicationScreenProps {
   onNavigate: (screen: string) => void;
@@ -70,7 +70,15 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
   };
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    // 如果正在说话，点击停止
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以幫您按時用藥，點我獲取提示');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '記得按時服用藥物，有需要我可以提醒您。',
       '下一次用藥時間要留意，我可以幫您播報。',
