@@ -1,6 +1,5 @@
 import { MapPin, Ambulance, Users, Clock, Phone, CheckCircle, Navigation } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { VoiceButton } from './VoiceButton';
 
 interface RescueVisualizationProps {
   onClose: () => void;
@@ -132,10 +131,6 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
               <p className="text-red-100">已通知救護車及緊急聯繫人</p>
             </div>
           </div>
-          <VoiceButton 
-            text="緊急救援可視化頁面。您可以即時查看救護車同埋聯繫人嘅位置同到達時間。"
-            size="large"
-          />
         </div>
       </div>
 

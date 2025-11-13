@@ -1,7 +1,6 @@
 import { ArrowLeft, TrendingUp, Target, Plus, Mic } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
-import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
 import { Progress } from './ui/progress';
 
@@ -82,9 +81,31 @@ export function ActivityScreen({ onNavigate, onEmergency, onVoiceInput }: Activi
       <div className="p-6 max-w-4xl mx-auto space-y-6">
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
           <div className="flex flex-col items-center text-center">
-            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+            {/* 紧急求助按钮 - 移到AI角色正上方 */}
+            <div className="mb-4 relative z-10">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('SOS button clicked!');
+                  onEmergency();
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2 cursor-pointer"
+                aria-label="緊急求助"
+                type="button"
+              >
+                <span className="text-lg">🆘</span>
+                <span className="font-bold">緊急求助</span>
+              </button>
+            </div>
+
+            <div className="mb-8 cursor-pointer" onClick={handleAIClick}>
               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
             </div>
+            
+            {/* 占位空间 - 为语句气泡留出空间 */}
+            <div className="mb-6"></div>
+            
             <button
               onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
               className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
@@ -195,8 +216,6 @@ export function ActivityScreen({ onNavigate, onEmergency, onVoiceInput }: Activi
           <span>記錄運動</span>
         </button>
       </div>
-
-      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }

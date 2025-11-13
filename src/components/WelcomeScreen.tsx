@@ -63,11 +63,17 @@ export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScree
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8">
         <div className="flex flex-col items-center mb-8">
           {/* SOS按钮 - 移到AI吉祥物正上方 */}
-          <div className="mb-4">
+          <div className="mb-4 relative z-10">
             <button
-              onClick={onEmergency}
-              className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('WelcomeScreen SOS button clicked!');
+                onEmergency();
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2 cursor-pointer"
               aria-label="緊急求助"
+              type="button"
             >
               <span className="text-lg">🆘</span>
               <span className="font-bold">緊急求助</span>

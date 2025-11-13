@@ -1,7 +1,6 @@
 import { ArrowLeft, Mic, MessageCircle, Heart, Sparkles } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { VoiceButton } from './VoiceButton';
-import { EmergencyButton } from './EmergencyButton';
 import { AICharacter } from './AICharacter';
 import { useState, useEffect } from 'react';
 
@@ -154,8 +153,26 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
         {/* AI角色展示區 */}
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 border-4 border-gradient-to-r from-blue-200 to-purple-200">
           <div className="flex flex-col lg:flex-row items-center gap-8">
-            {/* AI角色 */}
-            <div className="flex-shrink-0">
+            {/* 紧急求助按钮和AI角色 */}
+            <div className="flex-shrink-0 flex flex-col items-center gap-4">
+              {/* 紧急求助按钮 - 移到AI角色正上方 */}
+              <div className="relative z-10">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('SOS button clicked!');
+                    onEmergency();
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-2xl px-6 py-3 shadow-xl transition-all hover:scale-105 flex items-center gap-2 cursor-pointer"
+                  aria-label="緊急求助"
+                  type="button"
+                >
+                  <span className="text-lg">🆘</span>
+                  <span className="font-bold">緊急求助</span>
+                </button>
+              </div>
+              
               <AICharacter 
                 emotion={aiEmotion}
                 isAnimating={isVoiceMode || isTyping}
@@ -279,8 +296,6 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput }: Assis
           </div>
         </div>
       </div>
-
-      <EmergencyButton onClick={onEmergency} />
     </div>
   );
 }
