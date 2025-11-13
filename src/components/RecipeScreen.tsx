@@ -1,6 +1,7 @@
 import { ArrowLeft, ChefHat, Heart, AlertCircle, Bookmark, Volume2, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { useState, useRef } from 'react';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface RecipeScreenProps {
   onNavigate: (screen: string) => void;
@@ -171,7 +172,14 @@ export function RecipeScreen({ onNavigate, onEmergency, onVoiceInput }: RecipeSc
   };
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以推薦低鈉菜式或朗讀做法');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '我可以推薦更健康嘅菜式，例如低鈉低油。',
       '需要我朗讀烹調步驟嗎？',
@@ -180,17 +188,23 @@ export function RecipeScreen({ onNavigate, onEmergency, onVoiceInput }: RecipeSc
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('happy');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以推薦低鈉菜式或朗讀做法');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以推薦低鈉菜式或朗讀做法');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以推薦低鈉菜式或朗讀做法');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

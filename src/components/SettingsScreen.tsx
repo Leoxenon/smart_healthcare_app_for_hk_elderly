@@ -4,6 +4,7 @@ import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { Slider } from './ui/slider';
 import { Switch } from './ui/switch';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface SettingsScreenProps {
   onNavigate: (screen: string) => void;
@@ -44,7 +45,14 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以協助您調整設置以更易用');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '需要我幫您選擇合適的字體大小或主題嗎？',
       '我可以示範語音設置效果。',
@@ -53,17 +61,23 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('talking');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以協助您調整設置以更易用');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以協助您調整設置以更易用');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以協助您調整設置以更易用');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

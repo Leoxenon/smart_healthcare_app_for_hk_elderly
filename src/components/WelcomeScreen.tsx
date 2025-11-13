@@ -1,6 +1,7 @@
 import { Fingerprint, Scan, UserPlus } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { useState } from 'react';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface WelcomeScreenProps {
   onLogin: () => void;
@@ -25,8 +26,12 @@ export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScree
 
   // AI吉祥物点击交互
   const handleAIClick = () => {
-    // 如果正在播放语音，忽略点击
+    // 如果正在播放语音，点击停止
     if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('');
+      setAiEmotion('happy');
       return;
     }
 
@@ -41,21 +46,23 @@ export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScree
     const randomMessage = welcomeGreetings[Math.floor(Math.random() * welcomeGreetings.length)];
     setAiEmotion('caring');
     setCurrentMessage(randomMessage);
-    setIsSpeaking(true);
     
-    // 播放粤语语音问候
-    const utterance = new SpeechSynthesisUtterance(randomMessage);
-    utterance.lang = 'zh-HK';
-    utterance.rate = 0.8;
-    utterance.volume = 0.8;
-    
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('');
-      setAiEmotion('happy');
-    };
-    
-    window.speechSynthesis.speak(utterance);
+    speakText(randomMessage, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

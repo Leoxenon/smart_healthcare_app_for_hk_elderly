@@ -3,6 +3,7 @@ import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
 import { Progress } from './ui/progress';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface ActivityScreenProps {
   onNavigate: (screen: string) => void;
@@ -35,7 +36,14 @@ export function ActivityScreen({ onNavigate, onEmergency, onVoiceInput }: Activi
   };
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以陪您運動並給予鼓勵');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '今日加油！步行三十分鐘對心臟好有幫助。',
       '要不要我幫您設定一個小目標？',
@@ -44,17 +52,23 @@ export function ActivityScreen({ onNavigate, onEmergency, onVoiceInput }: Activi
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('happy');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以陪您運動並給予鼓勵');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以陪您運動並給予鼓勵');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以陪您運動並給予鼓勵');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

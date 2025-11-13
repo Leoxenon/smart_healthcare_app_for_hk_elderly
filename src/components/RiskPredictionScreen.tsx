@@ -2,6 +2,7 @@ import { ArrowLeft, TrendingUp, AlertTriangle, Heart, Activity, CheckCircle, Cal
 import { AICharacter } from './AICharacter';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface RiskPredictionScreenProps {
   onNavigate: (screen: string) => void;
@@ -43,7 +44,14 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
   };
 
   const handleAIClick = () => {
-    if (isSpeaking) return;
+    if (isSpeaking) {
+      stopAllAudio();
+      setIsSpeaking(false);
+      setCurrentMessage('我可以解釋風險並提供行動建議');
+      setAiEmotion('happy');
+      return;
+    }
+    
     const msgs = [
       '我可以用簡單方式解釋當前風險。',
       '需要我幫您制定運動、飲食或監測計劃嗎？',
@@ -52,17 +60,23 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('thinking');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以解釋風險並提供行動建議');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以解釋風險並提供行動建議');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以解釋風險並提供行動建議');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   const recommendations = [

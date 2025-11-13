@@ -1,5 +1,6 @@
 import { AlertTriangle, X, Phone } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { speakText } from '../utils/audioManager';
 
 interface EmergencyModalProps {
   onClose: () => void;
@@ -28,13 +29,12 @@ export function EmergencyModal({ onClose, onConfirm }: EmergencyModalProps) {
   }, [isCancelled]);
 
   useEffect(() => {
-    // Play voice alert
-    const utterance = new SpeechSynthesisUtterance(
-      '已啟動緊急求助，將立即聯繫您的家屬和醫療機構。如需取消，請點擊取消按鈕。'
-    );
-    utterance.lang = 'zh-HK';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    // Play voice alert using global audio manager
+    speakText('已啟動緊急求助，將立即聯繫您的家屬和醫療機構。如需取消，請點擊取消按鈕。', {
+      lang: 'zh-HK',
+      rate: 0.9,
+      volume: 1.0,
+    });
   }, []);
 
   const handleConfirm = () => {

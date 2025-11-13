@@ -122,28 +122,30 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
         try {
           sessionStorage.setItem('hasGreetedDashboardSession', 'true');
         } catch {}
-        setIsSpeaking(true);
         
-        // 播放粤语问候
-        const utterance = new SpeechSynthesisUtterance(greeting);
-        utterance.lang = 'zh-HK';
-        utterance.rate = 0.8;
-        utterance.volume = 0.8;
-        
-        utterance.onend = () => {
-          setIsSpeaking(false);
-          setCurrentMessage('點擊我可以問候，點擊想法氣泡去不同功能！');
-          setAiEmotion('happy');
-          setShowBubbles(true); // 直接显示想法气泡
-          
-          
-          // 5秒后清除提示信息
-          setTimeout(() => {
-            setCurrentMessage('');
-          }, 5000);
-        };
-        
-        window.speechSynthesis.speak(utterance);
+        speakText(greeting, {
+          lang: 'zh-HK',
+          rate: 0.8,
+          volume: 0.8,
+          onStart: () => setIsSpeaking(true),
+          onEnd: () => {
+            setIsSpeaking(false);
+            setCurrentMessage('點擊我可以問候，點擊想法氣泡去不同功能！');
+            setAiEmotion('happy');
+            setShowBubbles(true);
+            
+            // 5秒后清除提示信息
+            setTimeout(() => {
+              setCurrentMessage('');
+            }, 5000);
+          },
+          onError: () => {
+            setIsSpeaking(false);
+            setCurrentMessage('點擊我可以問候，點擊想法氣泡去不同功能！');
+            setAiEmotion('happy');
+            setShowBubbles(true);
+          },
+        });
       }, 1000);
     }
   }, [hasGreeted, now]);

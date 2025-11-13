@@ -1,5 +1,6 @@
 import { MapPin, Ambulance, Users, Clock, Phone, CheckCircle, Navigation } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { speakText } from '../utils/audioManager';
 
 interface RescueVisualizationProps {
   onClose: () => void;
@@ -35,7 +36,7 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
       distance: 1.2,
       eta: 3,
       status: 'on-route',
-      phone: '9123-4567',
+      phone: '8403-0622',
       icon: '👩‍⚕️',
     },
     {
@@ -75,13 +76,12 @@ export function RescueVisualization({ onClose }: RescueVisualizationProps) {
   }, []);
 
   useEffect(() => {
-    // Voice announcement
-    const utterance = new SpeechSynthesisUtterance(
-      '緊急救援已啟動。救護車預計5分鐘內到達，社工預計3分鐘內到達。請保持冷靜，留在原地等待。'
-    );
-    utterance.lang = 'zh-HK';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+    // Voice announcement using global audio manager
+    speakText('緊急救援已啟動。救護車預計5分鐘內到達，社工預計3分鐘內到達。請保持冷靜，留在原地等待。', {
+      lang: 'zh-HK',
+      rate: 0.9,
+      volume: 1.0,
+    });
   }, []);
 
   const formatTime = (minutes: number) => {
