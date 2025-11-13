@@ -1,0 +1,108 @@
+diff --git a/src/components/SettingsScreen.tsx b/src/components/SettingsScreen.tsx
+index df1a2f1..0ef41cd 100644
+--- a/src/components/SettingsScreen.tsx
++++ b/src/components/SettingsScreen.tsx
+@@ -68,7 +68,7 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+   };
+ 
+   return (
+-    <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
++    <div className="min-h-screen bg-gray-50">
+       <div className="bg-white shadow-md p-6">
+         <div className="flex items-center justify-between mb-4">
+           <div className="flex items-center gap-4">
+@@ -81,26 +81,25 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+             </button>
+             <h1 className="text-gray-700">設置</h1>
+           </div>
+-          <VoiceButton 
+-            text="設置頁面。您可以調整字體大小、語音設置、主題和輔助功能選項。"
+-            size="large"
+-          />
+         </div>
+       </div>
+ 
+       <div className="p-6 max-w-4xl mx-auto space-y-6">
+         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+           <div className="flex flex-col items-center text-center">
+-            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
++            {/* 紧急求助按钮 - 移到AI角色正上方 */}
++            <div className="mb-4">
++              <EmergencyButton onClick={onEmergency} />
++            </div>
++
++            <div className="mb-8 cursor-pointer" onClick={handleAIClick}>
+               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+             </div>
+-            <button
+-              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+-              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+-              aria-label="語音輸入"
+-            >
+-              <Mic className="w-6 h-6" />
+-            </button>
++            
++            {/* 占位空间 - 为语句气泡留出空间 */}
++            <div className="mb-6"></div>
++            
++            <VoiceButton onClick={onVoiceInput} />
+           </div>
+         </div>
+         {/* Font Size */}
+@@ -113,7 +112,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+               <h2>字體大小</h2>
+               <p className="text-gray-600">選擇最適合您的字體大小</p>
+             </div>
+-            <VoiceButton text="字體大小設置。選擇小、標準、大或特大字體。" />
+           </div>
+ 
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+@@ -143,7 +141,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+               <h2>語音設置</h2>
+               <p className="text-gray-600">調整語音播放選項</p>
+             </div>
+-            <VoiceButton text="語音設置。調整語速、音量和語言。" />
+           </div>
+ 
+           <div className="space-y-8">
+@@ -219,7 +216,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+               <h2>主題選擇</h2>
+               <p className="text-gray-600">選擇淺色或深色主題</p>
+             </div>
+-            <VoiceButton text="主題選擇。選擇淺色或深色模式。" />
+           </div>
+ 
+           <div className="grid grid-cols-2 gap-4">
+@@ -249,7 +245,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+               <h2>輔助功能</h2>
+               <p className="text-gray-600">額外的無障礙選項</p>
+             </div>
+-            <VoiceButton text="輔助功能設置。包括高對比度模式和其他無障礙選項。" />
+           </div>
+ 
+           <div className="space-y-6">
+@@ -296,7 +291,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+               <h2>緊急聯繫人設置</h2>
+               <p className="text-gray-600">管理緊急求助聯繫人</p>
+             </div>
+-            <VoiceButton text="緊急聯繫人設置。管理在緊急情況下將被通知的人員。" />
+           </div>
+ 
+           <button
+@@ -317,7 +311,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+               <h2>關於和幫助</h2>
+               <p className="text-gray-600">應用信息和使用指南</p>
+             </div>
+-            <VoiceButton text="關於和幫助。查看應用版本信息和使用教程。" />
+           </div>
+ 
+           <div className="space-y-4">
+@@ -340,8 +333,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
+           </div>
+         </div>
+       </div>
+-
+-      <EmergencyButton onClick={onEmergency} />
+     </div>
+   );
+ }

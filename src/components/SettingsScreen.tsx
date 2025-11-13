@@ -81,10 +81,6 @@ export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings
             </button>
             <h1 className="text-gray-700">設置</h1>
           </div>
-          <VoiceButton 
-            text="設置頁面。您可以調整字體大小、語音設置、主題和輔助功能選項。"
-            size="large"
-          />
         </div>
       </div>
 
