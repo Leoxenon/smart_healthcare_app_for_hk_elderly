@@ -15,6 +15,7 @@ import { RiskPredictionScreen } from './components/RiskPredictionScreen';
 import { VoiceListeningModal } from './components/VoiceListeningModal';
 import { RescueVisualization } from './components/RescueVisualization';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { stopAllAudio } from './utils/audioManager';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
@@ -53,6 +54,8 @@ export default function App() {
   };
 
   const navigateTo = (screen: string) => {
+    // 页面切换时停止所有正在播放的音频
+    stopAllAudio();
     setCurrentScreen(screen);
   };
 

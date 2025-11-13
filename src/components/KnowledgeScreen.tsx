@@ -2,6 +2,7 @@ import { ArrowLeft, BookOpen, Clock, Volume2, Mic, Settings } from 'lucide-react
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface KnowledgeScreenProps {
   onNavigate: (screen: string) => void;
@@ -117,6 +118,7 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
 
   const handleAIClick = () => {
     if (isSpeaking) return;
+    
     const msgs = [
       '需要我推薦適合您健康狀況的文章嗎？',
       '我可以朗讀文章重點，幫您快速了解。',
@@ -125,17 +127,23 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('talking');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以為您推薦文章或朗讀重點');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以為您推薦文章或朗讀重點');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以為您推薦文章或朗讀重點');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   if (selectedArticle !== null) {
@@ -210,40 +218,33 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                   if (isReadingFullText) {
                     // 如果正在播放，则暂停
                     console.log('暂停朗读');
-                    window.speechSynthesis.cancel();
+                    stopAllAudio();
                     setIsReadingFullText(false);
                   } else {
                     // 如果未播放，则开始播放
                     console.log('开始朗读');
-                    setIsReadingFullText(true); // 立即设置为true，让按钮变红
+                    setIsReadingFullText(true);
                     
                     const fullText = article.content.join(' ');
                     console.log('全文内容长度:', fullText.length);
                     
-                    const utterance = new SpeechSynthesisUtterance(fullText);
-                    utterance.lang = 'zh-HK';
-                    utterance.rate = 0.8;
-                    utterance.volume = 1.0;
-                    
-                    utterance.onstart = () => {
-                      console.log('朗读已开始');
-                    };
-                    
-                    utterance.onend = () => {
-                      console.log('朗读已结束');
-                      setIsReadingFullText(false);
-                    };
-                    
-                    utterance.onerror = (event) => {
-                      console.error('朗读出错:', event);
-                      setIsReadingFullText(false);
-                    };
-                    
-                    window.speechSynthesis.cancel(); // 先取消之前的朗读
-                    setTimeout(() => {
-                      window.speechSynthesis.speak(utterance);
-                      console.log('已调用 speechSynthesis.speak()');
-                    }, 100);
+                    speakText(fullText, {
+                      lang: 'zh-HK',
+                      rate: 0.8,
+                      volume: 1.0,
+                      onStart: () => {
+                        console.log('朗读已开始');
+                        setIsReadingFullText(true);
+                      },
+                      onEnd: () => {
+                        console.log('朗读已结束');
+                        setIsReadingFullText(false);
+                      },
+                      onError: (event) => {
+                        console.error('朗读出错:', event);
+                        setIsReadingFullText(false);
+                      },
+                    });
                   }
                 }}
                 className={`${

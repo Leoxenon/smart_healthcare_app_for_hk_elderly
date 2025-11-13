@@ -2,6 +2,7 @@ import { ArrowLeft, Plus, Check, Clock, Mic, Settings } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
+import { speakText } from '../utils/audioManager';
 
 interface MedicationScreenProps {
   onNavigate: (screen: string) => void;
@@ -78,17 +79,23 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
     const m = msgs[Math.floor(Math.random() * msgs.length)];
     setAiEmotion('caring');
     setCurrentMessage(m);
-    setIsSpeaking(true);
-    const u = new SpeechSynthesisUtterance(m);
-    u.lang = 'zh-HK';
-    u.rate = 0.8;
-    u.volume = 0.8;
-    u.onend = () => {
-      setIsSpeaking(false);
-      setCurrentMessage('我可以幫您按時用藥，點我獲取提示');
-      setAiEmotion('happy');
-    };
-    window.speechSynthesis.speak(u);
+    
+    speakText(m, {
+      lang: 'zh-HK',
+      rate: 0.8,
+      volume: 0.8,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以幫您按時用藥，點我獲取提示');
+        setAiEmotion('happy');
+      },
+      onError: () => {
+        setIsSpeaking(false);
+        setCurrentMessage('我可以幫您按時用藥，點我獲取提示');
+        setAiEmotion('happy');
+      },
+    });
   };
 
   return (

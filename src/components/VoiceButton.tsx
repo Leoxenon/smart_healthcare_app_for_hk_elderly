@@ -1,6 +1,7 @@
 import { Volume2 } from 'lucide-react';
 import { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
+import { speakText, stopAllAudio } from '../utils/audioManager';
 
 interface VoiceButtonProps {
   text: string;
@@ -14,30 +15,28 @@ export function VoiceButton({ text, size = 'small', className = '' }: VoiceButto
 
   const handlePlay = () => {
     if (isPlaying) {
-      window.speechSynthesis.cancel();
+      stopAllAudio();
       setIsPlaying(false);
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    let lang = 'zh-HK';
     if (settings.language === 'cantonese') {
-      utterance.lang = 'zh-HK';
+      lang = 'zh-HK';
     } else if (settings.language === 'mandarin') {
-      utterance.lang = 'zh-CN';
+      lang = 'zh-CN';
     } else if (settings.language === 'english') {
-      utterance.lang = 'en-US';
-    } else {
-      utterance.lang = 'zh-HK';
+      lang = 'en-US';
     }
-    utterance.rate = settings.voiceSpeed;
-    utterance.volume = settings.voiceVolume;
-    utterance.onstart = () => {
-      setIsPlaying(true);
-    };
-    utterance.onend = () => {
-      setIsPlaying(false);
-    };
-    window.speechSynthesis.speak(utterance);
+
+    speakText(text, {
+      lang,
+      rate: settings.voiceSpeed,
+      volume: settings.voiceVolume,
+      onStart: () => setIsPlaying(true),
+      onEnd: () => setIsPlaying(false),
+      onError: () => setIsPlaying(false),
+    });
   };
 
   if (size === 'large') {
