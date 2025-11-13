@@ -62,34 +62,62 @@ export default function App() {
 
   const handleVoiceCommand = (command: string) => {
     const t = command.toLowerCase();
+    
+    // 用药管理
     if (t.includes('用藥') || t.includes('藥物') || t.includes('用药') || t.includes('药物') || t.includes('吃药') || t.includes('medicine') || t.includes('medication') || t.includes('pill') || t.includes('drug')) {
       navigateTo('medication');
       return;
     }
+    
+    // 健康数据
     if (t.includes('血壓') || t.includes('數據') || t.includes('血压') || t.includes('健康数据') || t.includes('数据') || t.includes('血糖') || t.includes('blood pressure') || t.includes('health data') || t.includes('glucose') || t.includes('sugar')) {
       navigateTo('health-data');
       return;
     }
+    
+    // 健康知识
     if (t.includes('知識') || t.includes('知識庫') || t.includes('知识') || t.includes('知识库') || t.includes('tips') || t.includes('knowledge') || t.includes('info') || t.includes('information')) {
       navigateTo('knowledge');
       return;
     }
+    
+    // 联络医生
     if (t.includes('醫生') || t.includes('聯絡') || t.includes('電話') || t.includes('医生') || t.includes('联系') || t.includes('电话') || t.includes('doctor') || t.includes('contact') || t.includes('call') || t.includes('phone')) {
       navigateTo('contacts');
       return;
     }
-    if (t.includes('緊急') || t.includes('求助') || t.includes('救命') || t.includes('紧急') || t.includes('帮助') || t.includes('急救') || t.includes('emergency') || t.includes('help')) {
+    
+    // 紧急求助
+    if (t.includes('緊急') || t.includes('求助') || t.includes('救命') || t.includes('紧急') || t.includes('帮助') || t.includes('急救') || t.includes('emergency') || t.includes('help') || t.includes('sos')) {
       handleEmergency();
       return;
     }
+    
+    // AI菜谱
     if (t.includes('菜譜') || t.includes('食譜') || t.includes('菜谱') || t.includes('食谱') || t.includes('recipe') || t.includes('food') || t.includes('cook') || t.includes('meal')) {
       navigateTo('recipe');
       return;
     }
+    
+    // AI风险预测
     if (t.includes('風險') || t.includes('預測') || t.includes('評估') || t.includes('风险') || t.includes('预测') || t.includes('评估') || t.includes('risk') || t.includes('prediction') || t.includes('assess')) {
       navigateTo('risk-prediction');
       return;
     }
+    
+    // 设置页面
+    if (t.includes('設置') || t.includes('设置') || t.includes('setting') || t.includes('settings') || t.includes('配置') || t.includes('選項') || t.includes('选项') || t.includes('options')) {
+      navigateTo('settings');
+      return;
+    }
+    
+    // 主页/首页
+    if (t.includes('主頁') || t.includes('首頁') || t.includes('主页') || t.includes('首页') || t.includes('home') || t.includes('dashboard') || t.includes('返回')) {
+      navigateTo('dashboard');
+      return;
+    }
+    
+    // 默认返回主页
     navigateTo('dashboard');
   };
 

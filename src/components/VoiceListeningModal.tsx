@@ -38,10 +38,18 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
         setIsListening(false);
       };
 
-      recognition.onerror = () => {
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
         setIsListening(false);
         setShowConfirmation(true);
-        setRecognizedText('');
+        // 根据错误类型设置不同的提示
+        if (event.error === 'no-speech') {
+          setRecognizedText('未能識別到語音，請重試');
+        } else if (event.error === 'network') {
+          setRecognizedText('網絡錯誤，請檢查網絡連接');
+        } else {
+          setRecognizedText('語音識別失敗，請重試');
+        }
       };
 
       recognition.onend = () => {
@@ -100,35 +108,76 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
               <div className="w-3 h-16 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
               <div className="w-3 h-12 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
-            <p className="text-gray-700">
+            <p className="text-gray-700 text-xl mb-4">
               {settings.language === 'english' ? 'Please say your command' : settings.language === 'mandarin' ? '請說出您的指令' : '請用粵語講出您嘅指令'}
             </p>
-            <p className="text-gray-500 mt-3">
-              {settings.language === 'english' ? 'e.g., "open medication", "record blood pressure"' : settings.language === 'mandarin' ? '例如：「開啟用藥提醒」、「記錄血壓」' : '例如：「開啟用藥提醒」、「記錄血壓」'}
-            </p>
+            <div className="bg-blue-50 rounded-2xl p-6 mt-6 text-left">
+              <p className="text-gray-700 font-semibold mb-3">
+                {settings.language === 'english' ? '📢 Available Commands:' : settings.language === 'mandarin' ? '📢 可用指令：' : '📢 可用指令：'}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600">
+                {settings.language === 'english' ? (
+                  <>
+                    <p>• "Open medication"</p>
+                    <p>• "Health data"</p>
+                    <p>• "Knowledge base"</p>
+                    <p>• "Contact doctor"</p>
+                    <p>• "Recipe"</p>
+                    <p>• "Risk prediction"</p>
+                    <p>• "Settings"</p>
+                    <p>• "Emergency help"</p>
+                  </>
+                ) : settings.language === 'mandarin' ? (
+                  <>
+                    <p>• 「开启用药提醒」</p>
+                    <p>• 「健康数据」</p>
+                    <p>• 「知识库」</p>
+                    <p>• 「联系医生」</p>
+                    <p>• 「食谱」</p>
+                    <p>• 「风险预测」</p>
+                    <p>• 「设置」</p>
+                    <p>• 「紧急求助」</p>
+                  </>
+                ) : (
+                  <>
+                    <p>• 「今日用藥」</p>
+                    <p>• 「健康數據」</p>
+                    <p>• 「健康知識」</p>
+                    <p>• 「聯絡醫生」</p>
+                    <p>• 「AI菜譜」</p>
+                    <p>• 「AI風險預測」</p>
+                    <p>• 「設置」</p>
+                    <p>• 「緊急求助」</p>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
         {showConfirmation && (
           <div className="space-y-6">
             <div className="bg-purple-50 rounded-3xl p-8 border-4 border-purple-300">
-              <p className="text-gray-700 mb-3">您講嘅係：</p>
-              <p className="text-purple-700">{recognizedText}</p>
+              <p className="text-gray-700 mb-3 text-xl">
+                {settings.language === 'english' ? 'You said:' : settings.language === 'mandarin' ? '您说的是：' : '您講嘅係：'}
+              </p>
+              <p className="text-purple-700 text-2xl font-semibold">{recognizedText || (settings.language === 'english' ? 'No speech detected' : settings.language === 'mandarin' ? '未能识别语音' : '未能識別到語音')}</p>
             </div>
 
             <div className="bg-yellow-50 rounded-2xl p-6 border-2 border-yellow-300">
-              <p className="text-gray-700">
-                ℹ️ 請確認指令係咪正確？如果唔正確，可以重新講過。
+              <p className="text-gray-700 text-lg">
+                {settings.language === 'english' ? 'ℹ️ Please confirm if the command is correct. If not, you can try again.' : settings.language === 'mandarin' ? 'ℹ️ 请确认指令是否正确？如果不正确，可以重新说一次。' : 'ℹ️ 請確認指令係咪正確？如果唔正確，可以重新講過。'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <button
                 onClick={handleConfirm}
-                className="bg-green-500 hover:bg-green-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-3"
+                disabled={!recognizedText || recognizedText.includes('未能識別') || recognizedText.includes('未能识别') || recognizedText.includes('失敗') || recognizedText.includes('失败') || recognizedText.includes('錯誤') || recognizedText.includes('错误')}
+                className={`${!recognizedText || recognizedText.includes('未能識別') || recognizedText.includes('未能识别') || recognizedText.includes('失敗') || recognizedText.includes('失败') || recognizedText.includes('錯誤') || recognizedText.includes('错误') ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'} text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-3`}
               >
                 <Check className="w-8 h-8" />
-                <span>確認</span>
+                <span>{settings.language === 'english' ? 'Confirm' : settings.language === 'mandarin' ? '确认' : '確認'}</span>
               </button>
 
               <button
@@ -136,7 +185,7 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
                 className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-3"
               >
                 <RotateCcw className="w-8 h-8" />
-                <span>重新講過</span>
+                <span>{settings.language === 'english' ? 'Try Again' : settings.language === 'mandarin' ? '重新说一次' : '重新講過'}</span>
               </button>
 
               <button
@@ -144,7 +193,7 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-2xl px-8 py-6 transition-all hover:scale-105 flex items-center justify-center gap-3"
               >
                 <X className="w-8 h-8" />
-                <span>取消</span>
+                <span>{settings.language === 'english' ? 'Cancel' : settings.language === 'mandarin' ? '取消' : '取消'}</span>
               </button>
             </div>
           </div>
