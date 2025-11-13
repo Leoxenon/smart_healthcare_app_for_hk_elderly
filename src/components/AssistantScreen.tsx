@@ -41,6 +41,7 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     const t = text.toLowerCase();
     const sadKeys = ['唔開心', '不開心', '不开心', 'sad', '傷心', '伤心'];
     const lonelyKeys = ['孤獨', '孤独', 'lonely', '一個人', '一个人'];
+    const positiveKeys = ['開心','开心','好開心','好开心','高興','高兴','愉快','精神好','心情好','放鬆','放松','安心','滿意','满意','順利','顺利','舒服','好舒服','興奮','兴奋'];
     const worryKeys = ['擔心', '担心', '焦慮', '焦虑', '壓力', '压力', 'anxious', 'worry'];
     const painKeys = ['痛', '唔舒服', '不舒服', 'pain'];
     const sleepKeys = ['瞓唔著', '睡不著', '睡不着', '失眠'];
@@ -48,6 +49,9 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     if (sadKeys.some(k => t.includes(k)) || lonelyKeys.some(k => t.includes(k))) {
       responseText = '聽到您唔開心/覺得孤獨，我好關心您。可以同我講講發生咩事嗎？我一直都喺度陪住您。要唔要我播放輕鬆音樂、或者幫您聯絡家人同朋友？您唔係一個人。';
       emotion = 'caring';
+    } else if (positiveKeys.some(k => t.includes(k))) {
+      responseText = '聽到您今日心情好，我都替您開心！要不要同我分享好消息？保持規律作息、適量運動、同朋友傾計，都有助維持呢份愉快。我可以幫您記錄今日心情，或者推薦輕鬆活動～';
+      emotion = 'happy';
     } else if (worryKeys.some(k => t.includes(k))) {
       responseText = '我明白您有擔心同壓力。試吓慢慢深呼吸，吸氣四秒、停四秒、呼氣四秒。我可以為您安排健康資訊，或者聯絡醫生解答疑問。您已經做得好好，慢慢嚟。';
       emotion = 'caring';
