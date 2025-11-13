@@ -131,9 +131,13 @@ export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: Medi
               </button>
             </div>
 
-            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+            <div className="mb-8 cursor-pointer" onClick={handleAIClick}>
               <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
             </div>
+            
+            {/* 占位空间 - 为语句气泡留出空间 */}
+            <div className="mb-6"></div>
+            
             <button
               onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
               className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
