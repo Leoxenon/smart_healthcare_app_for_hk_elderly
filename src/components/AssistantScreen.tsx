@@ -11,6 +11,7 @@ interface AssistantScreenProps {
   onVoiceInput?: () => void;
   incomingText?: string;
   onConsumeIncoming?: () => void;
+  onBack?: () => void;
 }
 
 interface Message {
@@ -20,7 +21,7 @@ interface Message {
   timestamp: Date;
 }
 
-export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomingText, onConsumeIncoming }: AssistantScreenProps) {
+export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomingText, onConsumeIncoming, onBack }: AssistantScreenProps) {
   const { settings } = useSettings();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -41,7 +42,15 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     const t = text.toLowerCase();
     const sadKeys = ['唔開心', '不開心', '不开心', 'sad', '傷心', '伤心'];
     const lonelyKeys = ['孤獨', '孤独', 'lonely', '一個人', '一个人'];
-    const positiveKeys = ['開心','开心','好開心','好开心','高興','高兴','愉快','精神好','心情好','放鬆','放松','安心','滿意','满意','順利','顺利','舒服','好舒服','興奮','兴奋'];
+    const positiveHappyKeys = ['開心','开心','好開心','好开心','高興','高兴','愉快','喜悅','喜悦','喜歡','喜欢','心情好','興奮','兴奋'];
+    const positiveGratitudeKeys = ['多謝','谢谢','感謝','感谢','致謝','谢意'];
+    const positiveRelaxKeys = ['放鬆','放松','平靜','平静','安心','安定','安穩','安稳','舒適','舒适','舒服','輕鬆','轻松'];
+    const positiveSatisfactionKeys = ['滿意','满意','心滿意足','心满意足','順利','顺利','稱心','称心','如願','如愿'];
+    const positiveEnergyKeys = ['精神好','有精神','有動力','有动力','起勁','起劲','想做','想開始','想开始','干劲'];
+    const positiveComfortKeys = ['舒服','好舒服','好返','好返了','好返啲','改善','好轉','好转','痛少了'];
+    const positiveSocialKeys = ['朋友','家人','傾計','聊天','團聚','聚會','見面','來探我','探望','探訪','聯絡','联系'];
+    const positiveHopeKeys = ['期待','希望','有信心','信心','樂觀','乐观'];
+    const positiveLearnKeys = ['學到','学到','學習','学习','進步','进步','新事物','新东西'];
     const worryKeys = ['擔心', '担心', '焦慮', '焦虑', '壓力', '压力', 'anxious', 'worry'];
     const painKeys = ['痛', '唔舒服', '不舒服', 'pain'];
     const sleepKeys = ['瞓唔著', '睡不著', '睡不着', '失眠'];
@@ -57,12 +66,36 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     } else if (hasDesignApp && (t.includes('應用程式') || t.includes('应用程式') || t.includes('應用程序') || t.includes('应用程序'))) {
       responseText = '這聽起來真是太棒了，希望你每天都能過得開心愉快，有健康的生活';
       emotion = 'happy';
+    } else if (positiveHappyKeys.some(k => t.includes(k))) {
+      responseText = '聽到您今日好開心，我都替您開心！不如記低今日開心嘅事情，我可以幫您保留呢份好心情，或者推薦輕鬆活動～';
+      emotion = 'happy';
+    } else if (positiveGratitudeKeys.some(k => t.includes(k))) {
+      responseText = '感受到您嘅感謝之心，真係好溫暖。保持感恩可以令心情更穩定，要唔要我幫您發一條感謝訊息畀相關人？';
+      emotion = 'happy';
+    } else if (positiveRelaxKeys.some(k => t.includes(k))) {
+      responseText = '而家覺得放鬆同安心真係好好，可以繼續做深呼吸或者聽輕鬆音樂。我可以播放舒緩音樂，或者推薦柔和伸展～';
+      emotion = 'happy';
+    } else if (positiveSatisfactionKeys.some(k => t.includes(k))) {
+      responseText = '覺得滿意同順利真係好事。不如用一分鐘回顧今日完成嘅小目標，我可以幫您記錄落嚟。';
+      emotion = 'happy';
+    } else if (positiveEnergyKeys.some(k => t.includes(k))) {
+      responseText = '有精神同動力真係好！要唔要安排一個輕量運動或短行走？我可以喺活動頁面為您設定。';
+      emotion = 'happy';
+    } else if (positiveComfortKeys.some(k => t.includes(k))) {
+      responseText = '聽到您覺得舒服或者好返啲，我替您高興。想保持呢個感覺，可以按時用藥同做輕鬆活動。我可以幫您提醒用藥或記錄感覺變化。';
+      emotion = 'happy';
+    } else if (positiveSocialKeys.some(k => t.includes(k))) {
+      responseText = '同家人朋友傾計真係好開心。要唔要記錄一次美好相聚，或者安排下次聯絡？我可以打開聯絡頁面。';
+      emotion = 'happy';
+    } else if (positiveHopeKeys.some(k => t.includes(k))) {
+      responseText = '保持期待同信心非常好。我可以同您定一個細目標，慢慢達成，保持呢份正能量～';
+      emotion = 'happy';
+    } else if (positiveLearnKeys.some(k => t.includes(k))) {
+      responseText = '學到新嘢真係好有意思。我可以將今日學到嘅要點記錄，或者推薦相關知識文章畀您。';
+      emotion = 'happy';
     } else if (sadKeys.some(k => t.includes(k)) || lonelyKeys.some(k => t.includes(k))) {
       responseText = '聽到您唔開心/覺得孤獨，我好關心您。可以同我講講發生咩事嗎？我一直都喺度陪住您。要唔要我播放輕鬆音樂、或者幫您聯絡家人同朋友？您唔係一個人。';
       emotion = 'caring';
-    } else if (positiveKeys.some(k => t.includes(k))) {
-      responseText = '聽到您今日心情好，我都替您開心！要不要同我分享好消息？保持規律作息、適量運動、同朋友傾計，都有助維持呢份愉快。我可以幫您記錄今日心情，或者推薦輕鬆活動～';
-      emotion = 'happy';
     } else if (worryKeys.some(k => t.includes(k))) {
       responseText = '我明白您有擔心同壓力。試吓慢慢深呼吸，吸氣四秒、停四秒、呼氣四秒。我可以為您安排健康資訊，或者聯絡醫生解答疑問。您已經做得好好，慢慢嚟。';
       emotion = 'caring';
@@ -172,6 +205,21 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     }, 1500);
   }, [incomingText]);
 
+  useEffect(() => {
+    try {
+      const greet = sessionStorage.getItem('assistantArrivalGreeting');
+      if (greet) {
+        setAiEmotion('talking');
+        setCurrentMessage(greet);
+        setTimeout(() => {
+          setCurrentMessage('');
+          setAiEmotion('happy');
+        }, 5000);
+        sessionStorage.removeItem('assistantArrivalGreeting');
+      }
+    } catch {}
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* 頂部導航 */}
@@ -214,12 +262,14 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
                 </button>
               </div>
               
-              <AICharacter 
-                emotion={aiEmotion}
-                isAnimating={isVoiceMode || isTyping}
-                size="large"
-                message={currentMessage}
-              />
+              <div className="cursor-pointer" onClick={() => onBack?.()}>
+                <AICharacter 
+                  emotion={aiEmotion}
+                  isAnimating={isVoiceMode || isTyping}
+                  size="large"
+                  message={currentMessage}
+                />
+              </div>
             </div>
 
             {/* 歡迎信息 */}

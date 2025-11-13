@@ -160,15 +160,6 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
 
   // 点击AI角色交互
   const handleAIClick = () => {
-    // 如果正在播放语音，点击停止
-    if (isSpeaking) {
-      stopAllAudio();
-      setIsSpeaking(false);
-      setCurrentMessage('');
-      setAiEmotion('happy');
-      return;
-    }
-
     const simpleGreetings = [
       '您好呀！有咩可以幫到您？',
       '今日身體感覺點樣？',
@@ -181,9 +172,11 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
     ];
     
     const randomMessage = simpleGreetings[Math.floor(Math.random() * simpleGreetings.length)];
-    setAiEmotion('talking'); // 说话时使用蓝色
-    setCurrentMessage(randomMessage);
-    
+    try {
+      sessionStorage.setItem('preserveAudioOnNavigate', 'true');
+      sessionStorage.setItem('assistantArrivalGreeting', randomMessage);
+    } catch {}
+    onNavigate('assistant');
     speakText(randomMessage, {
       lang: 'zh-HK',
       rate: 0.8,

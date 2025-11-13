@@ -19,6 +19,7 @@ import { stopAllAudio } from './utils/audioManager';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('welcome');
+  const [prevScreen, setPrevScreen] = useState<string>('welcome');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
   const [showVoiceListening, setShowVoiceListening] = useState(false);
@@ -55,8 +56,17 @@ export default function App() {
   };
 
   const navigateTo = (screen: string) => {
-    // 页面切换时停止所有正在播放的音频
-    stopAllAudio();
+    try { setPrevScreen(currentScreen); } catch {}
+    try {
+      const preserve = sessionStorage.getItem('preserveAudioOnNavigate') === 'true';
+      if (preserve) {
+        sessionStorage.removeItem('preserveAudioOnNavigate');
+      } else {
+        stopAllAudio();
+      }
+    } catch {
+      stopAllAudio();
+    }
     setCurrentScreen(screen);
   };
 
@@ -71,7 +81,7 @@ export default function App() {
       return;
     }
     const t = command.toLowerCase();
-    const emotionKeys = ['唔開心','不開心','不开心','sad','傷心','伤心','孤獨','孤独','lonely','一個人','一个人','擔心','担心','焦慮','焦虑','壓力','压力','anxious','worry','痛','唔舒服','不舒服','pain','瞓唔著','睡不著','睡不着','失眠','悶','闷','無聊','无聊','開心','开心','好開心','好开心','高興','高兴','愉快','精神好','心情好','放鬆','放松','安心','滿意','满意','順利','顺利','舒服','好舒服','興奮','兴奋'];
+    const emotionKeys = ['唔開心','不開心','不开心','sad','傷心','伤心','孤獨','孤独','lonely','一個人','一个人','擔心','担心','焦慮','焦虑','壓力','压力','anxious','worry','痛','唔舒服','不舒服','pain','瞓唔著','睡不著','睡不着','失眠','悶','闷','無聊','无聊','開心','开心','好開心','好开心','高興','高兴','愉快','喜悅','喜悦','喜歡','喜欢','精神好','心情好','放鬆','放松','平靜','平静','安心','安定','安穩','安稳','滿意','满意','心滿意足','心满意足','順利','顺利','稱心','称心','如願','如愿','舒服','好舒服','輕鬆','轻松','興奮','兴奋','有精神','有動力','有动力','起勁','起劲','想做','想開始','想开始','干劲','朋友','家人','傾計','聊天','團聚','聚會','見面','來探我','探望','探訪','聯絡','联系','期待','希望','有信心','信心','樂觀','乐观','學到','学到','學習','学习','進步','进步','新事物','新东西'];
     if (emotionKeys.some(k => t.includes(k))) {
       setPendingAssistantText(command);
       navigateTo('assistant');
@@ -136,6 +146,11 @@ export default function App() {
     navigateTo('dashboard');
   };
 
+  const navigateBackFromAssistant = () => {
+    stopAllAudio();
+    setCurrentScreen(prevScreen || 'dashboard');
+  };
+
   const handleEmergencyConfirm = () => {
     setShowEmergency(false);
     setShowRescueVisualization(true);
@@ -159,7 +174,7 @@ export default function App() {
       case 'knowledge':
         return <KnowledgeScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'assistant':
-        return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} incomingText={pendingAssistantText} onConsumeIncoming={() => setPendingAssistantText('')} />;
+        return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} incomingText={pendingAssistantText} onConsumeIncoming={() => setPendingAssistantText('')} onBack={navigateBackFromAssistant} />;
       case 'activity':
         return <ActivityScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'contacts':
