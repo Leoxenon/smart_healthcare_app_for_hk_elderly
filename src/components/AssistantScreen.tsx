@@ -46,7 +46,18 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     const painKeys = ['痛', '唔舒服', '不舒服', 'pain'];
     const sleepKeys = ['瞓唔著', '睡不著', '睡不着', '失眠'];
     const boredKeys = ['悶', '闷', '無聊', '无聊'];
-    if (sadKeys.some(k => t.includes(k)) || lonelyKeys.some(k => t.includes(k))) {
+    // 特定正面情景：有年輕人來聊天與測試應用
+    const hasYoungVisit = t.includes('後生仔') || t.includes('年輕人') || t.includes('年轻人');
+    const hasAppTest = t.includes('測試') || t.includes('测试') || t.includes('應用程式') || t.includes('应用程式') || t.includes('應用程序') || t.includes('应用程序');
+    const hasDesignApp = t.includes('設計') || t.includes('设计');
+
+    if (hasYoungVisit && hasAppTest && (t.includes('開心') || t.includes('开心'))) {
+      responseText = '聽起來真是太好了！能有年輕人來和您聊天，還有測試應用程式，一定讓您感到很受重視和開心。這樣的互動很棒，還能學到新事物！您和他們聊了些什麼呢？如果有趣的事情，也可以分享一下！这种交流真的很美好！';
+      emotion = 'happy';
+    } else if (hasDesignApp && (t.includes('應用程式') || t.includes('应用程式') || t.includes('應用程序') || t.includes('应用程序'))) {
+      responseText = '這聽起來真是太棒了，希望你每天都能過得開心愉快，有健康的生活';
+      emotion = 'happy';
+    } else if (sadKeys.some(k => t.includes(k)) || lonelyKeys.some(k => t.includes(k))) {
       responseText = '聽到您唔開心/覺得孤獨，我好關心您。可以同我講講發生咩事嗎？我一直都喺度陪住您。要唔要我播放輕鬆音樂、或者幫您聯絡家人同朋友？您唔係一個人。';
       emotion = 'caring';
     } else if (positiveKeys.some(k => t.includes(k))) {

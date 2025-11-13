@@ -66,6 +66,10 @@ export default function App() {
   };
 
   const handleVoiceCommand = (command: string) => {
+    if (currentScreen === 'assistant') {
+      setPendingAssistantText(command);
+      return;
+    }
     const t = command.toLowerCase();
     const emotionKeys = ['唔開心','不開心','不开心','sad','傷心','伤心','孤獨','孤独','lonely','一個人','一个人','擔心','担心','焦慮','焦虑','壓力','压力','anxious','worry','痛','唔舒服','不舒服','pain','瞓唔著','睡不著','睡不着','失眠','悶','闷','無聊','无聊','開心','开心','好開心','好开心','高興','高兴','愉快','精神好','心情好','放鬆','放松','安心','滿意','满意','順利','顺利','舒服','好舒服','興奮','兴奋'];
     if (emotionKeys.some(k => t.includes(k))) {
