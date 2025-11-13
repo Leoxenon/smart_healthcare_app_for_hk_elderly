@@ -31,7 +31,7 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
       id: 3,
       name: '張先生',
       relationship: '兒子',
-      phone: '9123-4567',
+      phone: '8403-0622',
       avatar: '👨',
       isEmergency: true,
     },

@@ -15,6 +15,7 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
   const [currentMessage, setCurrentMessage] = useState<string>('我可以為您推薦文章或朗讀重點');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isReadingFullText, setIsReadingFullText] = useState(false); // 新增：全文朗读状态
 
   const categories = [
     { id: 'diabetes', label: '糖尿病', color: 'bg-blue-500' },
@@ -194,10 +195,69 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
             <div className="text-center mb-8">
               <div className="text-8xl mb-6">{article.thumbnail}</div>
               <h1 className="mb-4">{article.title}</h1>
-              <div className="flex items-center justify-center gap-3 text-gray-600">
+              <div className="flex items-center justify-center gap-3 text-gray-600 mb-6">
                 <Clock className="w-6 h-6" />
                 <span>閱讀時長: {article.readTime}</span>
               </div>
+              
+              {/* 全文朗读按钮 - 移到文章开头 */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('全文朗读按钮被点击，当前状态:', isReadingFullText);
+                  
+                  if (isReadingFullText) {
+                    // 如果正在播放，则暂停
+                    console.log('暂停朗读');
+                    window.speechSynthesis.cancel();
+                    setIsReadingFullText(false);
+                  } else {
+                    // 如果未播放，则开始播放
+                    console.log('开始朗读');
+                    setIsReadingFullText(true); // 立即设置为true，让按钮变红
+                    
+                    const fullText = article.content.join(' ');
+                    console.log('全文内容长度:', fullText.length);
+                    
+                    const utterance = new SpeechSynthesisUtterance(fullText);
+                    utterance.lang = 'zh-HK';
+                    utterance.rate = 0.8;
+                    utterance.volume = 1.0;
+                    
+                    utterance.onstart = () => {
+                      console.log('朗读已开始');
+                    };
+                    
+                    utterance.onend = () => {
+                      console.log('朗读已结束');
+                      setIsReadingFullText(false);
+                    };
+                    
+                    utterance.onerror = (event) => {
+                      console.error('朗读出错:', event);
+                      setIsReadingFullText(false);
+                    };
+                    
+                    window.speechSynthesis.cancel(); // 先取消之前的朗读
+                    setTimeout(() => {
+                      window.speechSynthesis.speak(utterance);
+                      console.log('已调用 speechSynthesis.speak()');
+                    }, 100);
+                  }
+                }}
+                className={`${
+                  isReadingFullText 
+                    ? 'bg-red-500 hover:bg-red-600' 
+                    : 'bg-blue-500 hover:bg-blue-600'
+                } text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 flex items-center justify-center gap-4 shadow-lg mx-auto cursor-pointer`}
+                type="button"
+              >
+                <Volume2 className="w-8 h-8" />
+                <span className="text-lg font-medium">
+                  {isReadingFullText ? '⏸️ 暫停朗讀' : '🔊 全文朗讀'}
+                </span>
+              </button>
             </div>
 
             <div className="space-y-8">
@@ -207,20 +267,6 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                 </div>
               ))}
             </div>
-
-            <button
-              onClick={() => {
-                const fullText = article.content.join(' ');
-                const utterance = new SpeechSynthesisUtterance(fullText);
-                utterance.lang = 'zh-HK';
-                utterance.rate = 0.8;
-                window.speechSynthesis.speak(utterance);
-              }}
-              className="w-full mt-8 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-8 py-8 transition-all hover:scale-105 flex items-center justify-center gap-4"
-            >
-              <Volume2 className="w-10 h-10" />
-              <span>全文朗讀</span>
-            </button>
           </div>
         </div>
       </div>

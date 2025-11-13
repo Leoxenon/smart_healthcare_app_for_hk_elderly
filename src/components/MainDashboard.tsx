@@ -266,11 +266,7 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
                       <button
                         key={bubble.id}
                         onClick={bubble.onClick}
-                        className={`${bubble.color} px-6 py-4 rounded-2xl shadow-lg border-2 hover:scale-110 transition-all duration-300 animate-bounce flex flex-col items-center gap-2 min-w-[120px]`}
-                        style={{ 
-                          animationDelay: `${index * 150}ms`,
-                          animationDuration: '2s'
-                        }}
+                        className={`${bubble.color} px-6 py-4 rounded-2xl shadow-lg border-2 hover:scale-110 transition-all duration-300 flex flex-col items-center gap-2 min-w-[120px]`}
                       >
                         <span className="text-2xl">{bubble.icon}</span>
                         <span className="text-sm font-medium text-center leading-tight">{bubble.text}</span>

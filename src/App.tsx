@@ -57,6 +57,7 @@ export default function App() {
   };
 
   const handleEmergency = () => {
+    console.log('App.tsx: handleEmergency called');
     setShowEmergency(true);
   };
 

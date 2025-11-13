@@ -60,8 +60,8 @@ export function EmergencyModal({ onClose, onConfirm }: EmergencyModalProps) {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-6">
-      <div className="bg-red-600 rounded-3xl shadow-2xl max-w-3xl w-full p-8 animate-pulse">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-6">
+      <div className="bg-red-600 rounded-3xl shadow-2xl max-w-3xl w-full p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <AlertTriangle className="w-16 h-16 text-white" />
