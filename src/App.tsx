@@ -33,6 +33,7 @@ export default function App() {
   });
 
   const handleLogin = () => {
+    try { sessionStorage.removeItem('hasGreetedDashboardSession'); } catch {}
     setIsLoggedIn(true);
     setCurrentScreen('dashboard');
   };
@@ -43,6 +44,7 @@ export default function App() {
 
   const handleRegistrationComplete = (profile: any) => {
     setUserProfile(profile);
+    try { sessionStorage.removeItem('hasGreetedDashboardSession'); } catch {}
     setIsLoggedIn(true);
     setCurrentScreen('dashboard');
     
@@ -108,23 +110,23 @@ export default function App() {
       case 'dashboard':
         return <MainDashboard onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'medication':
-        return <MedicationScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <MedicationScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'health-data':
-        return <HealthDataScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <HealthDataScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'knowledge':
-        return <KnowledgeScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <KnowledgeScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'assistant':
         return <AssistantScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'activity':
-        return <ActivityScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <ActivityScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'contacts':
-        return <ContactsScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <ContactsScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'settings':
-        return <SettingsScreen onNavigate={navigateTo} onEmergency={handleEmergency} settings={settings} onUpdateSettings={setSettings} />;
+        return <SettingsScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} settings={settings} onUpdateSettings={setSettings} />;
       case 'recipe':
-        return <RecipeScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <RecipeScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'risk-prediction':
-        return <RiskPredictionScreen onNavigate={navigateTo} onEmergency={handleEmergency} />;
+        return <RiskPredictionScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       default:
         return <MainDashboard onNavigate={navigateTo} onEmergency={handleEmergency} />;
     }

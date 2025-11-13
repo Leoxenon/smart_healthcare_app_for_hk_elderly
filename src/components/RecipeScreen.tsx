@@ -1,11 +1,13 @@
-import { ArrowLeft, ChefHat, Heart, AlertCircle, Bookmark, Volume2 } from 'lucide-react';
+import { ArrowLeft, ChefHat, Heart, AlertCircle, Bookmark, Volume2, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface RecipeScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
 interface Recipe {
@@ -27,9 +29,14 @@ interface Recipe {
   saved: boolean;
 }
 
-export function RecipeScreen({ onNavigate, onEmergency }: RecipeScreenProps) {
+export function RecipeScreen({ onNavigate, onEmergency, onVoiceInput }: RecipeScreenProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [savedRecipes, setSavedRecipes] = useState<number[]>([1, 3]);
+  const [playingRecipeId, setPlayingRecipeId] = useState<number | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以推薦低鈉菜式或朗讀做法');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const recipes: Recipe[] = [
     {
@@ -139,11 +146,53 @@ export function RecipeScreen({ onNavigate, onEmergency }: RecipeScreenProps) {
   };
 
   const speakRecipe = (recipe: Recipe) => {
+    const synth = window.speechSynthesis;
+    try { synth.cancel(); } catch {}
     const text = `${recipe.name}。${recipe.healthBenefits}。主要食材包括：${recipe.ingredients.join('、')}。烹調步驟：${recipe.steps.join('。')}`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-HK';
     utterance.rate = 0.8;
-    window.speechSynthesis.speak(utterance);
+    utterance.onstart = () => {
+      setPlayingRecipeId(recipe.id);
+    };
+    utterance.onend = () => {
+      setPlayingRecipeId(null);
+    };
+    utteranceRef.current = utterance;
+    synth.speak(utterance);
+  };
+
+  const togglePlayStop = (recipe: Recipe) => {
+    const synth = window.speechSynthesis;
+    if (playingRecipeId === recipe.id && synth.speaking) {
+      try { synth.cancel(); } catch {}
+      setPlayingRecipeId(null);
+    } else {
+      speakRecipe(recipe);
+    }
+  };
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '我可以推薦更健康嘅菜式，例如低鈉低油。',
+      '需要我朗讀烹調步驟嗎？',
+      '飲食配合病情管理更有效。'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('happy');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以推薦低鈉菜式或朗讀做法');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
   };
 
   return (
@@ -168,6 +217,20 @@ export function RecipeScreen({ onNavigate, onEmergency }: RecipeScreenProps) {
       </div>
 
       <div className="p-6 max-w-6xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* AI Recommendation Banner */}
         <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-3xl shadow-lg p-8 mb-6 text-white">
           <div className="flex items-center gap-4 mb-4">
@@ -262,12 +325,12 @@ export function RecipeScreen({ onNavigate, onEmergency }: RecipeScreenProps) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  speakRecipe(recipe);
+                  togglePlayStop(recipe);
                 }}
                 className="w-full mt-4 bg-purple-500 hover:bg-purple-600 text-white rounded-2xl px-6 py-4 transition-all hover:scale-105 flex items-center justify-center gap-3"
               >
                 <Volume2 className="w-6 h-6" />
-                <span>語音講解</span>
+                <span>{playingRecipeId === recipe.id ? '停止' : '播放'}</span>
               </button>
             </div>
           ))}
@@ -338,11 +401,11 @@ export function RecipeScreen({ onNavigate, onEmergency }: RecipeScreenProps) {
               </button>
 
               <button
-                onClick={() => speakRecipe(selectedRecipe)}
+                onClick={() => togglePlayStop(selectedRecipe)}
                 className="bg-purple-500 hover:bg-purple-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 shadow-lg flex items-center justify-center gap-3"
               >
                 <Volume2 className="w-8 h-8" />
-                <span>語音講解</span>
+                <span>{playingRecipeId === selectedRecipe.id ? '停止' : '播放'}</span>
               </button>
             </div>
           </div>

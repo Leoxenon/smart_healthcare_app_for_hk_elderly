@@ -1,4 +1,5 @@
-import { ArrowLeft, TrendingUp, Target, Plus } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Target, Plus, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
@@ -7,12 +8,16 @@ import { Progress } from './ui/progress';
 interface ActivityScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function ActivityScreen({ onNavigate, onEmergency }: ActivityScreenProps) {
+export function ActivityScreen({ onNavigate, onEmergency, onVoiceInput }: ActivityScreenProps) {
   const [todaySteps] = useState(6543);
   const [weeklyGoal] = useState(50000);
   const [weeklySteps] = useState(35420);
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以陪您運動並給予鼓勵');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const weekData = [
     { day: '週一', steps: 5200 },
@@ -28,6 +33,29 @@ export function ActivityScreen({ onNavigate, onEmergency }: ActivityScreenProps)
 
   const handleAddActivity = () => {
     alert('記錄運動活動');
+  };
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '今日加油！步行三十分鐘對心臟好有幫助。',
+      '要不要我幫您設定一個小目標？',
+      '保持運動可降低風險，您做得到！'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('happy');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以陪您運動並給予鼓勵');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
   };
 
   return (
@@ -52,6 +80,20 @@ export function ActivityScreen({ onNavigate, onEmergency }: ActivityScreenProps)
       </div>
 
       <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* Today's Steps */}
         <div className="bg-gradient-to-br from-green-500 to-blue-500 rounded-3xl shadow-2xl p-12 text-white">
           <div className="flex items-center justify-between mb-6">

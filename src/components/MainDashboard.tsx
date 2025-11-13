@@ -15,7 +15,13 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
   const [currentMessage, setCurrentMessage] = useState<string>('點擊我可以問候，點擊想法氣泡去不同功能！');
   const [showBubbles, setShowBubbles] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const [hasGreeted, setHasGreeted] = useState(true);
+  const [hasGreeted, setHasGreeted] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('hasGreetedDashboardSession') === 'true';
+    } catch {
+      return true;
+    }
+  });
   const [isSpeaking, setIsSpeaking] = useState(false); // 新增：语音播放状态
 
   const now = new Date();
@@ -103,24 +109,18 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
     '晚安！早啲瞓覺呀！'
   ];
 
-  // 初始问候
+  // 初始问候（仅首次进入）
   useEffect(() => {
     if (!hasGreeted) {
-      const hour = now.getHours();
-      let greeting = '';
-      
-      if (hour < 12) {
-        greeting = '早晨！今日天氣好靚呀！記得食早餐同埋飲水呀！';
-      } else if (hour < 18) {
-        greeting = '午安！今日過得點樣？記得按時食藥呀！';
-      } else {
-        greeting = '晚安！今晚食咗飯未？記得早啲休息呀！';
-      }
+      const greeting = '早晨，今日身體點呀？今日有冇準時食藥？';
 
       setTimeout(() => {
         setAiEmotion('talking');
         setCurrentMessage(greeting);
         setHasGreeted(true);
+        try {
+          sessionStorage.setItem('hasGreetedDashboardSession', 'true');
+        } catch {}
         setIsSpeaking(true);
         
         // 播放粤语问候
@@ -134,6 +134,7 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
           setCurrentMessage('點擊我可以問候，點擊想法氣泡去不同功能！');
           setAiEmotion('happy');
           setShowBubbles(true); // 直接显示想法气泡
+          
           
           // 5秒后清除提示信息
           setTimeout(() => {

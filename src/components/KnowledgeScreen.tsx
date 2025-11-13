@@ -1,4 +1,5 @@
-import { ArrowLeft, BookOpen, Clock, Volume2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Volume2, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
@@ -6,11 +7,15 @@ import { useState } from 'react';
 interface KnowledgeScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function KnowledgeScreen({ onNavigate, onEmergency }: KnowledgeScreenProps) {
+export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: KnowledgeScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState('diabetes');
   const [selectedArticle, setSelectedArticle] = useState<number | null>(null);
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以為您推薦文章或朗讀重點');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const categories = [
     { id: 'diabetes', label: '糖尿病', color: 'bg-blue-500' },
@@ -110,6 +115,29 @@ export function KnowledgeScreen({ onNavigate, onEmergency }: KnowledgeScreenProp
 
   const currentArticles = articles[selectedCategory as keyof typeof articles] || [];
 
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '需要我推薦適合您健康狀況的文章嗎？',
+      '我可以朗讀文章重點，幫您快速了解。',
+      '常看健康知識有助改善生活習慣。'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('talking');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以為您推薦文章或朗讀重點');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
+  };
+
   if (selectedArticle !== null) {
     const article = currentArticles.find(a => a.id === selectedArticle);
     if (!article) return null;
@@ -202,6 +230,20 @@ export function KnowledgeScreen({ onNavigate, onEmergency }: KnowledgeScreenProp
       </div>
 
       <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* Category Tabs */}
         <div className="flex gap-4 mb-8 overflow-x-auto pb-4">
           {categories.map((category) => (

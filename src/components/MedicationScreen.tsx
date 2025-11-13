@@ -1,4 +1,5 @@
-import { ArrowLeft, Plus, Check, Clock } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Clock, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
@@ -6,9 +7,10 @@ import { useState } from 'react';
 interface MedicationScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function MedicationScreen({ onNavigate, onEmergency }: MedicationScreenProps) {
+export function MedicationScreen({ onNavigate, onEmergency, onVoiceInput }: MedicationScreenProps) {
   const [medications, setMedications] = useState([
     {
       id: 1,
@@ -52,6 +54,10 @@ export function MedicationScreen({ onNavigate, onEmergency }: MedicationScreenPr
     },
   ]);
 
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以幫您按時用藥，點我獲取提示');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   const handleTaken = (id: number) => {
     setMedications(medications.map(med => 
       med.id === id ? { ...med, taken: true } : med
@@ -61,6 +67,29 @@ export function MedicationScreen({ onNavigate, onEmergency }: MedicationScreenPr
   const handleRemindLater = (id: number) => {
     // Mock remind later functionality
     alert('將在15分鐘後再次提醒您');
+  };
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '記得按時服用藥物，有需要我可以提醒您。',
+      '下一次用藥時間要留意，我可以幫您播報。',
+      '用藥要配合醫生建議，如有不適請聯絡醫生。'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('caring');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以幫您按時用藥，點我獲取提示');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
   };
 
   return (
@@ -85,6 +114,20 @@ export function MedicationScreen({ onNavigate, onEmergency }: MedicationScreenPr
       </div>
 
       <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         <div className="space-y-6">
           {medications.map((med) => (
             <div

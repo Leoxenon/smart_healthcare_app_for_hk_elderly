@@ -1,4 +1,5 @@
-import { ArrowLeft, Phone, MessageCircle, Plus, User } from 'lucide-react';
+import { ArrowLeft, Phone, MessageCircle, Plus, User, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
@@ -6,9 +7,10 @@ import { useState } from 'react';
 interface ContactsScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function ContactsScreen({ onNavigate, onEmergency }: ContactsScreenProps) {
+export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: ContactsScreenProps) {
   const [contacts] = useState([
     {
       id: 1,
@@ -52,6 +54,10 @@ export function ContactsScreen({ onNavigate, onEmergency }: ContactsScreenProps)
     },
   ]);
 
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以幫您快速聯絡醫生或家屬');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   const emergencyContacts = contacts.filter(c => c.isEmergency);
   const regularContacts = contacts.filter(c => !c.isEmergency);
 
@@ -65,6 +71,29 @@ export function ContactsScreen({ onNavigate, onEmergency }: ContactsScreenProps)
 
   const handleAddContact = () => {
     alert('添加新聯繫人');
+  };
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '如需緊急幫助，我可以引導您撥打電話。',
+      '我可以幫您確認聯繫人資訊是否最新。',
+      '需要我播報某位聯繫人的電話嗎？'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('caring');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以幫您快速聯絡醫生或家屬');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
   };
 
   return (
@@ -89,6 +118,20 @@ export function ContactsScreen({ onNavigate, onEmergency }: ContactsScreenProps)
       </div>
 
       <div className="p-6 max-w-4xl mx-auto space-y-8">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* Emergency Contacts */}
         <div>
           <div className="flex items-center gap-3 mb-6">

@@ -1,4 +1,5 @@
-import { ArrowLeft, TrendingUp, AlertTriangle, Heart, Activity, CheckCircle, Calendar, Phone } from 'lucide-react';
+import { ArrowLeft, TrendingUp, AlertTriangle, Heart, Activity, CheckCircle, Calendar, Phone, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -7,11 +8,15 @@ import { useState } from 'react';
 interface RiskPredictionScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function RiskPredictionScreen({ onNavigate, onEmergency }: RiskPredictionScreenProps) {
+export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: RiskPredictionScreenProps) {
   const [showActionModal, setShowActionModal] = useState(false);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以解釋風險並提供行動建議');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Mock risk trend data
   const riskTrendData = [
@@ -37,6 +42,29 @@ export function RiskPredictionScreen({ onNavigate, onEmergency }: RiskPrediction
     if (score >= 50) return { level: '中高危', color: 'orange', bgColor: 'bg-orange-500' };
     if (score >= 30) return { level: '中危', color: 'yellow', bgColor: 'bg-yellow-500' };
     return { level: '低危', color: 'green', bgColor: 'bg-green-500' };
+  };
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '我可以用簡單方式解釋當前風險。',
+      '需要我幫您制定運動、飲食或監測計劃嗎？',
+      '有疑問可隨時問我，或者聯絡醫生。'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('thinking');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以解釋風險並提供行動建議');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
   };
 
   const recommendations = [
@@ -121,6 +149,20 @@ export function RiskPredictionScreen({ onNavigate, onEmergency }: RiskPrediction
       </div>
 
       <div className="p-6 max-w-6xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* Risk Alert Banner */}
         {currentRisk.overall >= 60 && (
           <div className="bg-red-500 rounded-3xl shadow-lg p-8 mb-6 text-white animate-pulse">

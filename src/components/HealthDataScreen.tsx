@@ -1,4 +1,5 @@
 import { ArrowLeft, Mic, TrendingUp, TrendingDown } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { useState } from 'react';
@@ -7,9 +8,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface HealthDataScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
 }
 
-export function HealthDataScreen({ onNavigate, onEmergency }: HealthDataScreenProps) {
+export function HealthDataScreen({ onNavigate, onEmergency, onVoiceInput }: HealthDataScreenProps) {
   const [activeTab, setActiveTab] = useState('blood-pressure');
   const [systolic, setSystolic] = useState('');
   const [diastolic, setDiastolic] = useState('');
@@ -63,6 +65,33 @@ export function HealthDataScreen({ onNavigate, onEmergency }: HealthDataScreenPr
     { id: 'weight', label: '體重', color: 'bg-green-500' },
     { id: 'heart-rate', label: '心率', color: 'bg-purple-500' },
   ];
+
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以幫您記錄數據或解讀趨勢');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '需要我幫您記錄血壓、血糖、體重或心率嗎？',
+      '我可以解釋趨勢變化，提供健康建議。',
+      '保持定期記錄有助及早發現問題。'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('thinking');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以幫您記錄數據或解讀趨勢');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
+  };
 
   const handleVoiceInput = () => {
     alert('請說出您的數據');
@@ -396,6 +425,20 @@ export function HealthDataScreen({ onNavigate, onEmergency }: HealthDataScreenPr
       </div>
 
       <div className="p-6 max-w-4xl mx-auto">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* Tabs */}
         <div className="flex gap-4 mb-6 overflow-x-auto pb-4">
           {tabs.map((tab) => (

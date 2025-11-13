@@ -1,4 +1,5 @@
-import { ArrowLeft, Type, Volume2, Palette, Eye, Users, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Type, Volume2, Palette, Eye, Users, HelpCircle, Mic } from 'lucide-react';
+import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { EmergencyButton } from './EmergencyButton';
 import { Slider } from './ui/slider';
@@ -7,6 +8,7 @@ import { Switch } from './ui/switch';
 interface SettingsScreenProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
+  onVoiceInput?: () => void;
   settings: {
     fontSize: string;
     theme: string;
@@ -18,7 +20,7 @@ interface SettingsScreenProps {
   onUpdateSettings: (settings: any) => void;
 }
 
-export function SettingsScreen({ onNavigate, onEmergency, settings, onUpdateSettings }: SettingsScreenProps) {
+export function SettingsScreen({ onNavigate, onEmergency, onVoiceInput, settings, onUpdateSettings }: SettingsScreenProps) {
   const fontSizes = [
     { id: 'small', label: '小', value: 'small' },
     { id: 'standard', label: '標準', value: 'standard' },
@@ -36,6 +38,33 @@ export function SettingsScreen({ onNavigate, onEmergency, settings, onUpdateSett
     { id: 'mandarin', label: '普通話', value: 'mandarin' },
     { id: 'english', label: '英文', value: 'english' },
   ];
+
+  const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
+  const [currentMessage, setCurrentMessage] = useState<string>('我可以協助您調整設置以更易用');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleAIClick = () => {
+    if (isSpeaking) return;
+    const msgs = [
+      '需要我幫您選擇合適的字體大小或主題嗎？',
+      '我可以示範語音設置效果。',
+      '開啟高對比度有助閱讀。'
+    ];
+    const m = msgs[Math.floor(Math.random() * msgs.length)];
+    setAiEmotion('talking');
+    setCurrentMessage(m);
+    setIsSpeaking(true);
+    const u = new SpeechSynthesisUtterance(m);
+    u.lang = 'zh-HK';
+    u.rate = 0.8;
+    u.volume = 0.8;
+    u.onend = () => {
+      setIsSpeaking(false);
+      setCurrentMessage('我可以協助您調整設置以更易用');
+      setAiEmotion('happy');
+    };
+    window.speechSynthesis.speak(u);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">{/* 去掉pb-24底部padding */}
@@ -59,6 +88,20 @@ export function SettingsScreen({ onNavigate, onEmergency, settings, onUpdateSett
       </div>
 
       <div className="p-6 max-w-4xl mx-auto space-y-6">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-6 cursor-pointer" onClick={handleAIClick}>
+              <AICharacter emotion={aiEmotion} isAnimating={false} size="large" message={currentMessage} />
+            </div>
+            <button
+              onClick={() => typeof onVoiceInput === 'function' && onVoiceInput()}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 shadow-lg transition-all hover:scale-110"
+              aria-label="語音輸入"
+            >
+              <Mic className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
         {/* Font Size */}
         <div className="bg-white rounded-3xl shadow-lg p-8">
           <div className="flex items-center gap-4 mb-6">

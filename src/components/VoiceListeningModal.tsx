@@ -100,8 +100,12 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
               <div className="w-3 h-16 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
               <div className="w-3 h-12 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
-            <p className="text-gray-700">請用粵語講出您嘅指令</p>
-            <p className="text-gray-500 mt-3">例如：「開啟用藥提醒」、「記錄血壓」</p>
+            <p className="text-gray-700">
+              {settings.language === 'english' ? 'Please say your command' : settings.language === 'mandarin' ? '請說出您的指令' : '請用粵語講出您嘅指令'}
+            </p>
+            <p className="text-gray-500 mt-3">
+              {settings.language === 'english' ? 'e.g., "open medication", "record blood pressure"' : settings.language === 'mandarin' ? '例如：「開啟用藥提醒」、「記錄血壓」' : '例如：「開啟用藥提醒」、「記錄血壓」'}
+            </p>
           </div>
         )}
 
