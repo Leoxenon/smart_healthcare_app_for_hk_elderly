@@ -157,15 +157,23 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
                 {settings.language === 'english' ? '📢 Available Commands (Any Language):' : settings.language === 'mandarin' ? '📢 可用指令（任何语言）：' : '📢 可用指令（任何語言）：'}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600 text-sm">
-                <p>• 今日用藥 / 用药 / Medication</p>
-                <p>• 健康數據 / 健康数据 / Health Data</p>
-                <p>• 健康知識 / 知识 / Knowledge</p>
-                <p>• 聯絡醫生 / 联系医生 / Contact Doctor</p>
-                <p>• AI菜譜 / 食谱 / Recipe</p>
-                <p>• 風險預測 / 风险预测 / Risk Prediction</p>
-                <p>• 設置 / 设置 / Settings</p>
-                <p>• 緊急求助 / 紧急求助 / Emergency</p>
+                <p>• 今日用藥 / 用药 / 食藥 / 吃药 / 服药 / Medication</p>
+                <p>• 健康數據 / 健康数据 / 量血壓 / 测血压 / 量血糖 / 测血糖 / Health Data</p>
+                <p>• 健康知識 / 知识 / 健康提示 / 健康資訊 / Knowledge</p>
+                <p>• 聯絡醫生 / 联系医生 / 打電話給醫生 / Contact Doctor</p>
+                <p>• AI菜譜 / 食谱 / 食物建議 / Recipe</p>
+                <p>• 風險預測 / 风险预测 / 風險評估 / Risk Prediction</p>
+                <p>• 設置 / 设置 / Options / Settings</p>
+                <p>• 緊急求助 / 紧急求助 / 報警 / Emergency</p>
               </div>
+            </div>
+            <div className="mt-8">
+              <button
+                onClick={onClose}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-2xl px-8 py-4 transition-all hover:scale-105"
+              >
+                {settings.language === 'english' ? 'Cancel' : settings.language === 'mandarin' ? '取消' : '取消'}
+              </button>
             </div>
           </div>
         )}

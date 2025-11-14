@@ -95,19 +95,19 @@ export default function App() {
     }
     
     // 用药管理
-    if (t.includes('用藥') || t.includes('藥物') || t.includes('用药') || t.includes('药物') || t.includes('吃药') || t.includes('medicine') || t.includes('medication') || t.includes('pill') || t.includes('drug')) {
+    if (t.includes('用藥') || t.includes('藥物') || t.includes('用药') || t.includes('药物') || t.includes('吃药') || t.includes('食藥') || t.includes('食药') || t.includes('服藥') || t.includes('服药') || t.includes('medicine') || t.includes('medication') || t.includes('pill') || t.includes('drug')) {
       navigateTo('medication');
       return;
     }
     
     // 健康数据
-    if (t.includes('血壓') || t.includes('數據') || t.includes('血压') || t.includes('健康数据') || t.includes('数据') || t.includes('血糖') || t.includes('blood pressure') || t.includes('health data') || t.includes('glucose') || t.includes('sugar')) {
+    if (t.includes('血壓') || t.includes('數據') || t.includes('血压') || t.includes('健康数据') || t.includes('数据') || t.includes('血糖') || t.includes('量血壓') || t.includes('测血压') || t.includes('量血糖') || t.includes('测血糖') || t.includes('blood pressure') || t.includes('health data') || t.includes('glucose') || t.includes('sugar')) {
       navigateTo('health-data');
       return;
     }
     
     // 健康知识
-    if (t.includes('知識') || t.includes('知識庫') || t.includes('知识') || t.includes('知识库') || t.includes('tips') || t.includes('knowledge') || t.includes('info') || t.includes('information')) {
+    if (t.includes('知識') || t.includes('知識庫') || t.includes('知识') || t.includes('知识库') || t.includes('健康提示') || t.includes('健康資訊') || t.includes('tips') || t.includes('knowledge') || t.includes('info') || t.includes('information')) {
       navigateTo('knowledge');
       return;
     }
@@ -119,7 +119,7 @@ export default function App() {
     }
     
     // 紧急求助
-    if (t.includes('緊急') || t.includes('求助') || t.includes('救命') || t.includes('紧急') || t.includes('帮助') || t.includes('急救') || t.includes('emergency') || t.includes('help') || t.includes('sos')) {
+    if (t.includes('緊急') || t.includes('求助') || t.includes('救命') || t.includes('紧急') || t.includes('帮助') || t.includes('急救') || t.includes('報警') || t.includes('报警') || t.includes('emergency') || t.includes('help') || t.includes('sos')) {
       handleEmergency();
       return;
     }
