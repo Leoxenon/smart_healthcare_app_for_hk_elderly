@@ -1,8 +1,9 @@
-import { ArrowLeft, BookOpen, Clock, Volume2, Mic, Settings } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, Volume2, Mic, Settings, Play, Youtube } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
 import { speakText, stopAllAudio } from '../utils/audioManager';
+import * as AspectRatio from '@radix-ui/react-aspect-ratio';
 
 interface KnowledgeScreenProps {
   onNavigate: (screen: string) => void;
@@ -102,6 +103,7 @@ export const knowledgeArticles = {
 export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: KnowledgeScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState('diabetes');
   const [selectedArticle, setSelectedArticle] = useState<number | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
   const [currentMessage, setCurrentMessage] = useState<string>('我可以為您推薦文章或朗讀重點');
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -115,8 +117,101 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
   ];
 
   const articles = knowledgeArticles;
+  const knowledgeVideos = {
+    diabetes: [
+      {
+        id: 101,
+        title: '糖尿病前期飲食貼士 — 養和醫院高級營養師 余思行',
+        videoEmbedUrl: 'https://www.youtube.com/embed/Pkv9BVhVrs0',
+        source: 'YouTube',
+        thumbnail: '🎥',
+      },
+    ],
+    hypertension: [
+      {
+        id: 102,
+        title: '高血壓終身需服藥？另類降壓偏方是否有用？',
+        videoEmbedUrl: 'https://www.youtube.com/embed/GjAq8PrMbSc',
+        source: 'YouTube',
+        thumbnail: '🎥',
+      },
+    ],
+    heart: [
+      {
+        id: 103,
+        title: '使用健康的食用油可以降低心臟病風險（粵語）',
+        videoEmbedUrl: 'https://www.youtube.com/embed/qr48Tc59vt8',
+        source: 'YouTube',
+        thumbnail: '🎥',
+      },
+    ],
+    other: [
+      {
+        id: 104,
+        title: '長壽老人三大「絕活」— 要教會家中老人（粵語）',
+        videoEmbedUrl: 'https://www.youtube.com/embed/J4llUsyw-ts',
+        source: 'YouTube',
+        thumbnail: '🎥',
+      },
+    ],
+  } as const;
 
   const currentArticles = articles[selectedCategory as keyof typeof articles] || [];
+  const currentVideos = knowledgeVideos[selectedCategory as keyof typeof knowledgeVideos] || [];
+
+  if (selectedVideo !== null) {
+    const video = currentVideos.find(v => v.id === selectedVideo);
+    if (!video) return null;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setSelectedVideo(null)}
+                className="p-4 hover:bg-gray-100 rounded-2xl transition-all"
+                aria-label="返回"
+              >
+                <ArrowLeft className="w-8 h-8 text-gray-700" />
+              </button>
+              <h1 className="text-yellow-700">影片詳情</h1>
+            </div>
+            <button
+              onClick={() => onNavigate('settings')}
+              className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+              aria-label="設置"
+            >
+              <Settings className="w-6 h-6 text-gray-600" />
+              <span className="text-sm text-gray-600">設置</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 max-w-4xl mx-auto">
+          <div className="bg-white rounded-3xl shadow-lg p-8">
+            <div className="text-center mb-6">
+              <div className="text-8xl mb-4">{video.thumbnail}</div>
+              <h1 className="mb-2">{video.title}</h1>
+              <div className="flex items-center justify-center gap-2 text-gray-600">
+                <Youtube className="w-5 h-5" />
+                <span>{video.source}</span>
+              </div>
+            </div>
+            <AspectRatio.Root ratio={16/9} className="rounded-xl overflow-hidden shadow">
+              <iframe
+                src={video.videoEmbedUrl}
+                title={video.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </AspectRatio.Root>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleAIClick = () => {
     // 如果正在说话，点击停止
@@ -216,6 +311,20 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                 <Clock className="w-6 h-6" />
                 <span>閱讀時長: {article.readTime}</span>
               </div>
+              { (article as any).videoEmbedUrl && (
+                <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-200">
+                  <h2 className="text-gray-800 mb-3">🎬 影片</h2>
+                  <AspectRatio.Root ratio={16/9} className="rounded-xl overflow-hidden shadow">
+                    <iframe
+                      src={(article as any).videoEmbedUrl}
+                      title="健康知識影片"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
+                  </AspectRatio.Root>
+                </div>
+              )}
               
               {/* 全文朗读按钮 - 移到文章开头 */}
               <button
@@ -363,6 +472,35 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
           ))}
         </div>
 
+        {/* Videos */}
+        <div className="space-y-6 mb-8">
+          {currentVideos.length > 0 && (
+            <h2 className="text-gray-800 mb-4 flex items-center gap-2"><Play className="w-6 h-6 text-purple-600" /> 影片</h2>
+          )}
+          {currentVideos.map((video) => (
+            <div key={video.id} className="bg-white rounded-3xl shadow-lg p-8">
+              <div className="flex items-start gap-6">
+                <div className="text-6xl flex-shrink-0">{video.thumbnail}</div>
+                <div className="flex-1">
+                  <h2 className="mb-3">{video.title}</h2>
+                  <div className="flex items-center gap-3 text-gray-600 mb-6">
+                    <Youtube className="w-5 h-5" />
+                    <span>{video.source}</span>
+                  </div>
+                  <div className="flex gap-4 items-center flex-wrap">
+                    <button
+                      onClick={() => setSelectedVideo(video.id)}
+                      className="bg-purple-500 hover:bg-purple-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105"
+                    >
+                      播放
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* Articles */}
         <div className="space-y-6">
           {currentArticles.map((article) => (
@@ -378,7 +516,7 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                     <Clock className="w-6 h-6" />
                     <span>閱讀時長: {article.readTime}</span>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 items-center flex-wrap">
                     <button
                       onClick={() => setSelectedArticle(article.id)}
                       className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-2xl px-8 py-6 transition-all hover:scale-105 flex-1 md:flex-none"
@@ -386,12 +524,18 @@ export function KnowledgeScreen({ onNavigate, onEmergency, onVoiceInput }: Knowl
                       閱讀
                     </button>
                     <VoiceButton text={`${article.title}。閱讀時長：${article.readTime}。點擊閱讀按鈕查看完整內容。`} />
+                    { (article as any).videoEmbedUrl && (
+                      <span className="text-sm px-3 py-2 rounded-xl bg-purple-100 text-purple-700 border border-purple-200">
+                        🎬 可觀看影片
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        
       </div>
     </div>
   );
