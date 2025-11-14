@@ -4,6 +4,7 @@ import { VoiceButton } from './VoiceButton';
 import { AICharacter } from './AICharacter';
 import { useState, useEffect } from 'react';
 import { speakText } from '../utils/audioManager';
+import { knowledgeArticles } from './KnowledgeScreen';
 
 interface AssistantScreenProps {
   onNavigate: (screen: string) => void;
@@ -39,6 +40,7 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
   const getResponse = (text: string) => {
     let responseText = '';
     let emotion: 'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping' = 'happy';
+    let articleToRead: string | null = null;
     const t = text.toLowerCase();
     const sadKeys = ['唔開心', '不開心', '不开心', 'sad', '傷心', '伤心'];
     const lonelyKeys = ['孤獨', '孤独', 'lonely', '一個人', '一个人'];
@@ -60,12 +62,71 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     const hasAppTest = t.includes('測試') || t.includes('测试') || t.includes('應用程式') || t.includes('应用程式') || t.includes('應用程序') || t.includes('应用程序');
     const hasDesignApp = t.includes('設計') || t.includes('设计');
 
-    if (hasYoungVisit && hasAppTest && (t.includes('開心') || t.includes('开心'))) {
+    const allArticles = Object.values(knowledgeArticles).flat();
+    const matched = allArticles.find(a => a.title.includes(text) || a.content.some(p => p.includes(text)));
+    if (matched) {
+      responseText = `我找到一篇關於「${matched.title}」的文章，現在為您朗讀。`;
+      emotion = 'talking';
+      articleToRead = matched.content.join(' ');
+    } else if (hasYoungVisit && hasAppTest && (t.includes('開心') || t.includes('开心'))) {
       responseText = '聽起來真是太好了！能有年輕人來和您聊天，還有測試應用程式，一定讓您感到很受重視和開心。這樣的互動很棒，還能學到新事物！您和他們聊了些什麼呢？如果有趣的事情，也可以分享一下！这种交流真的很美好！';
       emotion = 'happy';
     } else if (hasDesignApp && (t.includes('應用程式') || t.includes('应用程式') || t.includes('應用程序') || t.includes('应用程序'))) {
       responseText = '這聽起來真是太棒了，希望你每天都能過得開心愉快，有健康的生活';
       emotion = 'happy';
+    } else if ((t.includes('院友') || t.includes('院友')) && (t.includes('社工')) && (t.includes('下棋') || t.includes('棋'))) {
+      responseText = '太好了！能和院友和社工一起下棋真的很棒！下棋不但能促進思維，還能增進彼此的交流和聯繫。您有沒有贏得幾局呢？或者在下棋的過程中發生了什麼有趣的事情？小健聽到您開心的心情，真的讓我也感到高興！';
+      emotion = 'happy';
+    } else if (t.includes('有趣') || t.includes('趣味')) {
+      responseText = '小健聽到這個有趣味的分享，希望你可以繼續開心下去，保持良好的心情過好每一天。';
+      emotion = 'happy';
+    } else if ((t.includes('後生仔') || t.includes('年輕人') || t.includes('年轻人')) && (t.includes('生果') || t.includes('水果'))) {
+      responseText = '真是太好了！他們不僅來陪您聊天，還帶了水果，這樣的關懷真的讓人感到特別舒服和開心。這樣的互動讓大家更有連結，也讓生活增色不少。您最喜歡什麼水果呢？希望您能經常享受到這樣的愉快時光！';
+      emotion = 'happy';
+    } else if (t.includes('橙') || t.includes('橙子') || t.includes('桔') || t.includes('橘')) {
+      responseText = '橙子真是個好選擇！酸酸甜甜的口感既清爽又美味，還能提供豐富的維生素C，對健康很有好處。享受橙子的同時，也能帶來好心情。您平常還有其他喜歡的水果嗎？或者有沒有特別的吃水果的方式？';
+      emotion = 'happy';
+    } else if (t.includes('蘋果') || t.includes('苹果')) {
+      responseText = '蘋果也是非常好的選擇！它們脆脆的口感和多樣的味道很受歡迎，還富含纖維和抗氧化劑，有助於保持健康。無論是直接吃、切片、還是做成沙拉或果汁，蘋果都很美味。';
+      emotion = 'happy';
+    } else if (t.includes('社工') && (t.includes('姐姐') || t.includes('職員') || t.includes('同事')) && (t.includes('傾計') || t.includes('聊天'))) {
+      responseText = '小健聽到有社工姐姐陪您聊天，真的非常好！這樣的支持讓人感到被關心和重視，能帶來很多溫暖和安慰。她們的陪伴讓您更容易分享心情，這是很重要的。不知道您們聊了哪些有趣的話題呢？這樣的交流對生活一定有很多幫助！';
+      emotion = 'happy';
+    } else if (t.includes('往事')) {
+      responseText = '往事常常能帶給我們很多回憶和情感。您想聊聊某些特別的往事嗎？也許是一些快樂的回憶，或者特別讓您感觸的事件。小健在這裡傾聽！';
+      emotion = 'caring';
+    } else if (t.includes('回憶') || t.includes('回忆')) {
+      responseText = '你的回憶令小健難忘，這些獨特的回憶，讓小健我充滿感激，讓他心中明白，無論生活怎樣變化，愛與關懷將永遠留在我的心中，指引著我關懷下一個有需要的人，感謝您的分享。';
+      emotion = 'caring';
+    } else if (t.includes('早餐')) {
+      responseText = '小健聽起來您的早餐非常美味！吃得好能讓人有很好的開始，特別是新的一天。您早餐吃了和喝了些什麼呢？';
+      emotion = 'happy';
+    } else if (t.includes('雞蛋') || t.includes('鸡蛋') || t.includes('蛋')) {
+      responseText = '雞蛋是非常健康的早餐選擇！它們不僅富含蛋白質，還能提供多種營養素，非常有助於身體健康。您是喜歡煮蛋、炒蛋還是其他方式吃蛋呢？';
+      emotion = 'happy';
+    } else if (t.includes('牛奶') || t.includes('奶')) {
+      responseText = '牛奶是個很棒的補充！它富含鈣質和蛋白質，對骨骼和整體健康都很有益。喝牛奶也可以搭配早餐，讓一餐更加營養！';
+      emotion = 'happy';
+    } else if (t.includes('麵包') || t.includes('面包')) {
+      if (t.includes('全麥') || t.includes('全麦')) {
+        responseText = '全麥麵包真是一個健康的選擇！它富含纖維，有助於消化，而且比白麵包更有營養,一定是既美味又充滿能量的早餐！';
+      } else {
+        responseText = '麵包搭配雞蛋真是個美味的早餐組合！麵包可以給予能量，讓您一天開始得更好。您喜歡吃什麼樣的麵包呢？全麥還是法式的？';
+      }
+      emotion = 'happy';
+    } else if (t.includes('粥')) {
+      if (t.includes('白粥')) {
+        responseText = '白粥是經典的早餐選擇，清淡而舒適，是個不錯的選擇，小健會推薦這麼健康的食物給其他老人家食哦。';
+      } else {
+        responseText = '粥也是非常好的選擇，尤其適合早餐！它輕盈而滋潤，容易消化。您是喜歡食白粥嗎？';
+      }
+      emotion = 'happy';
+    } else if (t.includes('其他')) {
+      responseText = '聽起來挺美味又健康，小健要好好推薦給下一個老家人食用。';
+      emotion = 'happy';
+    } else if (t.includes('沒有食') || t.includes('没吃') || t.includes('未食') || t.includes('冇食')) {
+      responseText = '小健溫馨提示：早餐是一天中重要的一餐，可以提供能量，幫助您開始美好的一天。也許您可以嘗試簡單的食物，比如水果、麵包或牛奶，這樣容易準備。如果您有時間，可以考慮午餐或晚餐好好補充一下。下次如果有空的話，小健希望您能享受一頓美味的早餐！';
+      emotion = 'caring';
     } else if (positiveHappyKeys.some(k => t.includes(k))) {
       responseText = '聽到您今日好開心，我都替您開心！不如記低今日開心嘅事情，我可以幫您保留呢份好心情，或者推薦輕鬆活動～';
       emotion = 'happy';
@@ -124,7 +185,7 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
       responseText = '謝謝您的分享。我已經記錄咗您的情況，如果需要更專業嘅建議，可以聯絡醫生。我亦都可以陪您傾吓、或者提供相關健康資訊。';
       emotion = 'caring';
     }
-    return { responseText, emotion };
+    return { responseText, emotion, articleToRead };
   };
 
   const quickReplies = [
@@ -194,12 +255,16 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
     setTimeout(() => {
       setAiEmotion('talking');
       setCurrentMessage('');
-      const { responseText, emotion } = getResponse(incomingText);
+      const { responseText, emotion, articleToRead } = getResponse(incomingText);
       setAiEmotion(emotion);
       const assistantMessage: Message = { id: messages.length + 2, type: 'assistant', text: responseText, timestamp: new Date() };
       setMessages(prev => [...prev, assistantMessage]);
       setIsTyping(false);
-      speakText(responseText, { lang: settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK', rate: settings.voiceSpeed, volume: settings.voiceVolume });
+      speakText(responseText, { lang: settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK', rate: settings.voiceSpeed, volume: settings.voiceVolume }).then(() => {
+        if (articleToRead) {
+          speakText(articleToRead, { lang: settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK', rate: settings.voiceSpeed, volume: Math.min(1, settings.voiceVolume) });
+        }
+      });
       setTimeout(() => { setAiEmotion('happy'); }, 3000);
       onConsumeIncoming?.();
     }, 1500);
