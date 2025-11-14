@@ -380,25 +380,29 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
                       : 'bg-white border-4 border-purple-100'
                   }`}
                 >
-                  <div className="flex items-start gap-4">
-                    {message.type === 'assistant' && (
-                      <AICharacter emotion="happy" size="small" />
-                    )}
-                    <div className="flex-1">
-                      <p className={`text-lg leading-relaxed ${message.type === 'user' ? 'text-gray-800' : 'text-gray-800'}`}>
-                        {message.text}
-                      </p>
-                      <p className={`mt-3 text-sm ${message.type === 'user' ? 'text-gray-600' : 'text-gray-600'}`}>
-                        {message.timestamp.toLocaleTimeString('zh-HK', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
+                  {message.type === 'assistant' ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <AICharacter emotion="happy" size="small" />
+                        <VoiceButton text={message.text} />
+                      </div>
+                      <div>
+                        <p className="text-lg leading-relaxed text-gray-800">{message.text}</p>
+                        <p className="mt-3 text-sm text-gray-600">
+                          {message.timestamp.toLocaleTimeString('zh-HK', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
                     </div>
-                    {message.type === 'assistant' && (
-                      <VoiceButton text={message.text} />
-                    )}
-                  </div>
+                  ) : (
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1">
+                        <p className="text-lg leading-relaxed text-gray-800">{message.text}</p>
+                        <p className="mt-3 text-sm text-gray-600">
+                          {message.timestamp.toLocaleTimeString('zh-HK', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
