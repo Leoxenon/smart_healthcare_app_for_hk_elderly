@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import { Mic, MessageCircle, Settings } from 'lucide-react';
+import { Mic, MessageCircle, Settings, LogOut } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { speakText, stopAllAudio } from '../utils/audioManager';
 
@@ -8,9 +8,10 @@ interface MainDashboardProps {
   onNavigate: (screen: string) => void;
   onEmergency: () => void;
   onVoiceInput?: () => void;
+  onLogout?: () => void;
 }
 
-export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDashboardProps) {
+export function MainDashboard({ onNavigate, onEmergency, onVoiceInput, onLogout }: MainDashboardProps) {
   const { settings } = useSettings();
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
   const [currentMessage, setCurrentMessage] = useState<string>('點擊我可以問候，點擊想法氣泡去不同功能！');
@@ -206,15 +207,24 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput }: MainDas
             <p className="text-gray-600">{dateStr}</p>
             <p className="text-gray-600">{timeStr}</p>
           </div>
-          {/* 设置按钮 - 放在右上方 */}
-          <button
-            onClick={() => onNavigate('settings')}
-            className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
-            aria-label="設置"
-          >
-            <Settings className="w-6 h-6 text-gray-600" />
-            <span className="text-sm text-gray-600">設置</span>
-          </button>
+          <div className="flex flex-col items-end gap-2">
+            <button
+              onClick={() => typeof onLogout === 'function' && onLogout()}
+              className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+              aria-label="退出"
+            >
+              <LogOut className="w-6 h-6 text-gray-600" />
+              <span className="text-sm text-gray-600">退出</span>
+            </button>
+            <button
+              onClick={() => onNavigate('settings')}
+              className="p-3 hover:bg-gray-100 rounded-xl transition-all flex items-center gap-2"
+              aria-label="設置"
+            >
+              <Settings className="w-6 h-6 text-gray-600" />
+              <span className="text-sm text-gray-600">設置</span>
+            </button>
+          </div>
         </div>
       </div>
 

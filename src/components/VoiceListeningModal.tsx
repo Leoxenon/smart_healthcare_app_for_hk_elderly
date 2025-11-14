@@ -25,29 +25,20 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
   useEffect(() => {
     if (!isListening) return;
 
-    // 优先使用用户设置的语言，然后尝试其他语言
     const userLang = settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK';
-    const orderedLangs = [
-      userLang,
-      ...supportedLanguages.map(l => l.code).filter(l => l !== userLang)
-    ];
-    
+    const orderedLangs = [userLang, ...supportedLanguages.map(l => l.code).filter(l => l !== userLang)];
     const recogLang = orderedLangs[currentLangIndex];
-    const promptText = recogLang === 'en-US' ? 'Listening in multiple languages, please speak' : 
-                       recogLang === 'zh-CN' ? '正在聆听，支持粤语、普通话和英文' : 
-                       '正在聆聽，支援粵語、普通話同英文';
-
-    // 只在第一次播放提示，使用全局音频管理
-    if (currentLangIndex === 0) {
-      speakText(promptText, {
-        lang: recogLang,
-        rate: 0.9,
-        volume: 0.8,
-      });
-    }
+    const promptText = recogLang === 'en-US' ? 'Listening in multiple languages, please speak' : recogLang === 'zh-CN' ? '正在聆听，支持粤语、普通话和英文' : '正在聆聽，支援粵語、普通話同英文';
 
     const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    if (SpeechRecognition) {
+    if (!SpeechRecognition) {
+      setIsListening(false);
+      setShowConfirmation(true);
+      setRecognizedText('');
+      return;
+    }
+
+    const startRecognition = () => {
       const recognition = new SpeechRecognition();
       recognition.lang = recogLang;
       recognition.continuous = false;
@@ -56,30 +47,28 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript as string;
         const confidence = event.results[0][0].confidence;
-        
+        const t = (transcript || '').toLowerCase();
+        const isPromptPhrase = t.includes('正在聆') || t.includes('listening');
         console.log(`Recognized in ${recogLang}: "${transcript}" (confidence: ${confidence})`);
-        
-        // 如果识别置信度高于0.5，接受结果
+        if (isPromptPhrase) {
+          return;
+        }
         if (confidence > 0.5 || currentLangIndex >= orderedLangs.length - 1) {
           setRecognizedText(transcript);
           setShowConfirmation(true);
           setIsListening(false);
         } else {
-          // 尝试下一种语言
           setCurrentLangIndex(prev => prev + 1);
         }
       };
 
       recognition.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error, 'in', recogLang);
-        
-        // 如果是no-speech错误且还有其他语言可以尝试，继续尝试
         if (event.error === 'no-speech' && currentLangIndex < orderedLangs.length - 1) {
           setCurrentLangIndex(prev => prev + 1);
         } else {
           setIsListening(false);
           setShowConfirmation(true);
-          // 根据错误类型设置不同的提示
           if (event.error === 'no-speech') {
             setRecognizedText('未能識別到語音，請重試');
           } else if (event.error === 'network') {
@@ -91,23 +80,28 @@ export function VoiceListeningModal({ onClose, onCommand }: VoiceListeningModalP
       };
 
       recognition.onend = () => {
-        // 如果还有其他语言要尝试，不要关闭监听状态
         if (currentLangIndex < orderedLangs.length - 1 && !showConfirmation) {
-          // 将在下一个useEffect中重新启动
         } else {
           setIsListening(false);
         }
       };
 
       recognition.start();
-      return () => {
-        recognition.stop?.();
-      };
+      return recognition;
+    };
+
+    let recognitionInstance: any;
+    if (currentLangIndex === 0) {
+      speakText(promptText, { lang: recogLang, rate: 0.9, volume: 0.8 }).then(() => {
+        recognitionInstance = startRecognition();
+      });
     } else {
-      setIsListening(false);
-      setShowConfirmation(true);
-      setRecognizedText('');
+      recognitionInstance = startRecognition();
     }
+
+    return () => {
+      try { recognitionInstance?.stop?.(); } catch {}
+    };
   }, [isListening, currentLangIndex]);
 
   const handleConfirm = () => {

@@ -1,4 +1,4 @@
-import { Fingerprint, Scan, UserPlus } from 'lucide-react';
+import { Fingerprint, Scan, UserPlus, Check, X } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { useState } from 'react';
 import { speakText, stopAllAudio } from '../utils/audioManager';
@@ -13,15 +13,51 @@ export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScree
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
   const [currentMessage, setCurrentMessage] = useState<string>('');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showDetection, setShowDetection] = useState(false);
+  const [detectionType, setDetectionType] = useState<'fingerprint' | 'face' | null>(null);
+  const [detectionProgress, setDetectionProgress] = useState(0);
+  const [detectionPassed, setDetectionPassed] = useState(false);
 
   const handleFingerprintLogin = () => {
-    // Mock fingerprint login
-    onLogin();
+    setDetectionType('fingerprint');
+    setShowDetection(true);
+    setDetectionProgress(0);
+    setDetectionPassed(false);
+    const timer = setInterval(() => {
+      setDetectionProgress(prev => {
+        const next = Math.min(100, prev + 10);
+        if (next === 100) {
+          clearInterval(timer);
+          setDetectionPassed(true);
+          setTimeout(() => {
+            setShowDetection(false);
+            onLogin();
+          }, 800);
+        }
+        return next;
+      });
+    }, 150);
   };
 
   const handleFaceLogin = () => {
-    // Mock face recognition login
-    onLogin();
+    setDetectionType('face');
+    setShowDetection(true);
+    setDetectionProgress(0);
+    setDetectionPassed(false);
+    const timer = setInterval(() => {
+      setDetectionProgress(prev => {
+        const next = Math.min(100, prev + 12);
+        if (next === 100) {
+          clearInterval(timer);
+          setDetectionPassed(true);
+          setTimeout(() => {
+            setShowDetection(false);
+            onLogin();
+          }, 800);
+        }
+        return next;
+      });
+    }, 140);
   };
 
   // AI吉祥物点击交互
@@ -143,6 +179,40 @@ export function WelcomeScreen({ onLogin, onRegister, onEmergency }: WelcomeScree
           </p>
         </div>
       </div>
+
+      {showDetection && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-green-700">{detectionType === 'fingerprint' ? '指紋識別' : '人臉識別'}</h2>
+              <button onClick={() => setShowDetection(false)} className="p-2 hover:bg-gray-100 rounded-xl" aria-label="關閉">
+                <X className="w-6 h-6 text-gray-700" />
+              </button>
+            </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className={`rounded-full p-6 ${detectionPassed ? 'bg-green-100' : 'bg-blue-100'} shadow-inner`}>
+                {detectionType === 'fingerprint' ? (
+                  <Fingerprint className={`w-10 h-10 ${detectionPassed ? 'text-green-600' : 'text-blue-600'}`} />
+                ) : (
+                  <Scan className={`w-10 h-10 ${detectionPassed ? 'text-green-600' : 'text-blue-600'}`} />
+                )}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div className="bg-green-500 h-3 rounded-full transition-all" style={{ width: `${detectionProgress}%` }}></div>
+              </div>
+              <div className="text-gray-700">
+                {detectionPassed ? '驗證通過' : '正在檢測...'}
+              </div>
+              {detectionPassed && (
+                <div className="flex items-center gap-2 text-green-700">
+                  <Check className="w-6 h-6" />
+                  <span>可以登入</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

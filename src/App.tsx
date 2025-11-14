@@ -41,6 +41,12 @@ export default function App() {
     setCurrentScreen('dashboard');
   };
 
+  const handleLogout = () => {
+    stopAllAudio();
+    setIsLoggedIn(false);
+    setCurrentScreen('welcome');
+  };
+
   const handleRegister = () => {
     setCurrentScreen('register');
   };
@@ -166,7 +172,7 @@ export default function App() {
 
     switch (currentScreen) {
       case 'dashboard':
-        return <MainDashboard onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
+        return <MainDashboard onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} onLogout={handleLogout} />;
       case 'medication':
         return <MedicationScreen onNavigate={navigateTo} onEmergency={handleEmergency} onVoiceInput={() => setShowVoiceListening(true)} />;
       case 'health-data':
