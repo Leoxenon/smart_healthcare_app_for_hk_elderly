@@ -1,4 +1,4 @@
-import { ArrowLeft, Phone, MessageCircle, Plus, User, Mic, Settings } from 'lucide-react';
+import { ArrowLeft, Phone, MessageCircle, Plus, User, Mic, Settings, Calendar, MapPin, ExternalLink } from 'lucide-react';
 import { AICharacter } from './AICharacter';
 import { VoiceButton } from './VoiceButton';
 import { useState } from 'react';
@@ -57,6 +57,10 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
   const [aiEmotion, setAiEmotion] = useState<'happy' | 'talking' | 'thinking' | 'caring' | 'sleeping'>('happy');
   const [currentMessage, setCurrentMessage] = useState<string>('我可以幫您快速聯絡醫生或家屬');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [selectedClinic, setSelectedClinic] = useState<string>('');
+  const [clinicAddress, setClinicAddress] = useState<string>('');
+  const [appointmentDate, setAppointmentDate] = useState<string>('');
+  const [appointmentTime, setAppointmentTime] = useState<string>('');
 
   const emergencyContacts = contacts.filter(c => c.isEmergency);
   const regularContacts = contacts.filter(c => !c.isEmergency);
@@ -71,6 +75,27 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
 
   const handleAddContact = () => {
     alert('添加新聯繫人');
+  };
+
+  const clinics = [
+    { id: 'qmh', name: '瑪麗醫院專科門診', address: '香港薄扶林道102號' },
+    { id: 'tmh', name: '屯門醫院專科門診', address: '新界屯門青松觀路23號' },
+    { id: 'uch', name: '聯合醫院專科門診', address: '九龍觀塘協和街130號' },
+    { id: 'pyneh', name: '威爾斯醫院專科門診', address: '新界沙田銀城街30-32號' },
+  ];
+
+  const handleClinicChange = (id: string) => {
+    const c = clinics.find(x => x.id === id);
+    setSelectedClinic(id);
+    setClinicAddress(c ? c.address : '');
+  };
+
+  const appointmentSummary = selectedClinic
+    ? `${clinics.find(c => c.id === selectedClinic)?.name}，地址：${clinicAddress}；日期：${appointmentDate || '未選擇'}；時間：${appointmentTime || '未選擇'}`
+    : '請選擇門診、日期與時間';
+
+  const openIAmSmart = () => {
+    window.open('https://www.iamsmart.gov.hk/', '_blank');
   };
 
   const handleAIClick = () => {
@@ -122,7 +147,7 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
             >
               <ArrowLeft className="w-8 h-8 text-gray-700" />
             </button>
-            <h1 className="text-blue-700">聯繫人</h1>
+            <h1 className="text-blue-700">問診服務</h1>
           </div>
           {/* 设置按钮 - 替换原来的语音按钮 */}
           <button
@@ -137,6 +162,75 @@ export function ContactsScreen({ onNavigate, onEmergency, onVoiceInput }: Contac
       </div>
 
       <div className="p-6 max-w-4xl mx-auto space-y-8">
+        {/* 政府專科門診預約 */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 border-4 border-green-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-green-500 rounded-full p-3">
+              <Calendar className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-green-700">政府專科門診預約</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-gray-700 mb-2">選擇門診</label>
+              <select
+                value={selectedClinic}
+                onChange={(e) => handleClinicChange(e.target.value)}
+                className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3"
+              >
+                <option value="">請選擇</option>
+                {clinics.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">門診地址</label>
+              <div className="flex items-center gap-2 bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3">
+                <MapPin className="w-5 h-5 text-gray-600" />
+                <span className="text-gray-800">{clinicAddress || '—'}</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">日期</label>
+              <input
+                type="date"
+                value={appointmentDate}
+                onChange={(e) => setAppointmentDate(e.target.value)}
+                className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">時間</label>
+              <input
+                type="time"
+                value={appointmentTime}
+                onChange={(e) => setAppointmentTime(e.target.value)}
+                className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 mb-6">
+            <VoiceButton text={`專科門診預約摘要：${appointmentSummary}`} />
+            <button
+              onClick={() => alert(`已生成預約摘要：${appointmentSummary}`)}
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl px-6 py-3 transition-all hover:scale-105 shadow-md"
+            >
+              生成預約摘要
+            </button>
+            <button
+              onClick={openIAmSmart}
+              className="bg-purple-500 hover:bg-purple-600 text-white rounded-2xl px-6 py-3 transition-all hover:scale-105 shadow-md flex items-center gap-2"
+            >
+              <ExternalLink className="w-5 h-5" />
+              前往「智方便」APP
+            </button>
+          </div>
+
+          <p className="text-gray-600 text-sm">提示：上述資訊為演示，實際預約需前往政府「智方便」APP或相關網站完成。</p>
+        </div>
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border-4 border-purple-100">
           <div className="flex flex-col items-center text-center">
             {/* 紧急求助按钮 - 移到AI角色正上方 */}

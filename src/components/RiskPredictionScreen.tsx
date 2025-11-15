@@ -225,9 +225,9 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
           <h2 className="text-gray-800 mb-6">今日綜合風險等級</h2>
           
           <div className="flex flex-col items-center mb-6">
-            <div className="relative w-64 h-64">
+            <div className="relative w-56 h-56 md:w-64 md:h-64 mx-auto">
               {/* Circular gauge */}
-              <svg className="transform -rotate-90 w-64 h-64">
+              <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 256 256">
                 <circle
                   cx="128"
                   cy="128"
@@ -249,10 +249,10 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-gray-800" style={{ fontSize: '48px' }}>
+                <span className="text-gray-800 text-5xl font-bold leading-none">
                   {currentRisk.overall}%
                 </span>
-                <span className={`text-${overallRisk.color}-600 mt-2`}>
+                <span className={`mt-2 ${overallRisk.color === 'red' ? 'text-red-600' : overallRisk.color === 'orange' ? 'text-orange-600' : overallRisk.color === 'yellow' ? 'text-yellow-600' : 'text-green-600'}`}>
                   {overallRisk.level}
                 </span>
               </div>
@@ -363,6 +363,14 @@ export function RiskPredictionScreen({ onNavigate, onEmergency, onVoiceInput }: 
                         )}
                       </div>
                       <p className="text-gray-600 mb-4">{rec.description}</p>
+                      <div className="flex items-center gap-3 mb-4">
+                        <button
+                          onClick={() => speakText(`${rec.title}。${rec.description}`, { lang: 'zh-HK', rate: 0.8, volume: 0.9 })}
+                          className="bg-purple-500 hover:bg-purple-600 text-white rounded-2xl px-6 py-3 transition-all hover:scale-105 shadow-md"
+                        >
+                          朗讀建議
+                        </button>
+                      </div>
                       
                       <button
                         onClick={() => handleActionClick(rec.action)}

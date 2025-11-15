@@ -235,6 +235,7 @@ export function AssistantScreen({ onNavigate, onEmergency, onVoiceInput, incomin
       const assistantMessage: Message = { id: messages.length + 2, type: 'assistant', text: responseText, timestamp: new Date() };
       setMessages(prev => [...prev, assistantMessage]);
       setIsTyping(false);
+      speakText(responseText, { lang: settings.language === 'mandarin' ? 'zh-CN' : settings.language === 'english' ? 'en-US' : 'zh-HK', rate: settings.voiceSpeed, volume: settings.voiceVolume });
       setTimeout(() => { setAiEmotion('happy'); }, 3000);
     }, 2000);
   };

@@ -92,7 +92,7 @@ export function MainDashboard({ onNavigate, onEmergency, onVoiceInput, onLogout 
     },
     {
       id: 'contacts',
-      text: '聯絡醫生',
+      text: '問診服務',
       icon: '📞',
       color: 'bg-purple-100 border-purple-300 text-purple-800',
       onClick: () => {
